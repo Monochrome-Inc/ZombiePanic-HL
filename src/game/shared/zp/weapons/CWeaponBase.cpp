@@ -3,6 +3,7 @@
 #include "CWeaponBase.h"
 #ifndef CLIENT_DLL
 #include "gamerules.h"
+#include "zp/gamemodes/zp_gamemodebase.h"
 #endif
 
 /// <summary>
@@ -277,6 +278,11 @@ void CWeaponBase::ItemPostFrame( void )
 
 	if ( m_bIsUnloading )
 		FinishUnloading();
+
+#ifndef CLIENT_DLL
+	if ( ZP::GetCurrentRoundState() != ZP::RoundState::RoundState_RoundHasBegun )
+		return;
+#endif
 
 	if ((m_fInReload) && (pPlayer->m_flNextAttack <= UTIL_WeaponTimeBase()))
 	{

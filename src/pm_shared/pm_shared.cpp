@@ -3260,6 +3260,7 @@ void PM_CheckParamters(void)
 	float spd;
 	float maxspeed;
 	Vector v_angle;
+	const bool bRoundInputLocked = atoi( pmove->PM_Info_ValueForKey( pmove->physinfo, "zprl" ) ) == 1;
 
 	spd = (pmove->cmd.forwardmove * pmove->cmd.forwardmove) + (pmove->cmd.sidemove * pmove->cmd.sidemove) + (pmove->cmd.upmove * pmove->cmd.upmove);
 	spd = sqrt(spd);
@@ -3274,7 +3275,7 @@ void PM_CheckParamters(void)
 	//
 	// JoshA: Moved this to CheckParamters rather than working on the velocity,
 	// as otherwise it affects every integration step incorrectly.
-	if (PM_GetActualUseSlowDownType() == EUseSlowDownType::New && (pmove->onground != -1) && (pmove->cmd.buttons & IN_USE))
+	if (!bRoundInputLocked && PM_GetActualUseSlowDownType() == EUseSlowDownType::New && (pmove->onground != -1) && (pmove->cmd.buttons & IN_USE))
 	{
 		pmove->maxspeed *= 1.0f / 3.0f;
 	}
@@ -3287,11 +3288,16 @@ void PM_CheckParamters(void)
 		pmove->cmd.upmove *= fRatio;
 	}
 
-	if (pmove->flags & FL_FROZEN || pmove->flags & FL_ONTRAIN || pmove->dead)
+	if (pmove->flags & FL_FROZEN || pmove->flags & FL_ONTRAIN || pmove->dead || bRoundInputLocked)
 	{
 		pmove->cmd.forwardmove = 0;
 		pmove->cmd.sidemove = 0;
 		pmove->cmd.upmove = 0;
+	}
+
+	if (bRoundInputLocked)
+	{
+		pmove->cmd.buttons &= ~(IN_FORWARD | IN_BACK | IN_MOVELEFT | IN_MOVERIGHT | IN_JUMP | IN_DUCK | IN_ATTACK | IN_ATTACK2 | IN_USE | IN_RELOAD | IN_UNLOAD);
 	}
 
 	PM_DropPunchAngle(pmove->punchangle);

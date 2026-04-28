@@ -70,6 +70,28 @@ static bool SpawnAnimatedPlayerCorpse(CBasePlayer *pPlayer);
 
 static constexpr int PLAYER_CORPSE_ANIM_MARKER = 31337;
 
+namespace
+{
+bool CanProcessRoundGameplayInput( const CBasePlayer *pPlayer )
+{
+	if ( !pPlayer ) return false;
+	return ZP::GetCurrentRoundState() == ZP::RoundState::RoundState_RoundHasBegun;
+}
+
+void UpdateRoundInputLockPhysicsKey( CBasePlayer *pPlayer )
+{
+	if ( !pPlayer ) return;
+
+	const bool bShouldLock = pPlayer->IsConnected()
+		&& pPlayer->IsAlive()
+		&& !pPlayer->IsObserver()
+		&& pPlayer->pev->team != ZP::TEAM_OBSERVER
+		&& ZP::GetCurrentRoundState() != ZP::RoundState::RoundState_RoundHasBegun;
+
+	g_engfuncs.pfnSetPhysicsKeyValue( pPlayer->edict(), "zprl", bShouldLock ? "1" : "0" );
+}
+}
+
 // the world node graph
 extern CGraph WorldGraph;
 
@@ -2094,6 +2116,7 @@ void CBasePlayer::StartWelcomeCam(void)
 	pev->deadflag = DEAD_RESPAWNABLE;
 	pev->effects = EF_NODRAW; // Hide model. This is used instead of pev->modelindex = 0
 	pev->team = ZP::TEAM_OBSERVER;
+	g_engfuncs.pfnSetPhysicsKeyValue( edict(), "zprl", "0" );
 
 	if ( ZPGameRules() )
 		ZPGameRules()->SendPlayerTeamInfo( this );
@@ -2283,6 +2306,9 @@ CBaseEntity *CBasePlayer::FindUseEntity()
 
 void CBasePlayer::PlayerUse(void)
 {
+	if ( !CanProcessRoundGameplayInput( this ) )
+		return;
+
 	// Was use pressed or released?
 	if (!((pev->button | m_afButtonPressed | m_afButtonReleased) & IN_USE))
 		return;
@@ -5017,6 +5043,7 @@ void CBasePlayer::Spawn(void)
 
 	g_engfuncs.pfnSetPhysicsKeyValue(edict(), "slj", "0");
 	g_engfuncs.pfnSetPhysicsKeyValue(edict(), "hl", "1");
+	UpdateRoundInputLockPhysicsKey( this );
 
 	pev->fov = m_iFOV = 0; // init field of view.
 	m_iClientFOV = -1; // make sure fov reset is sent
@@ -5300,7 +5327,11 @@ void CBasePlayer::SelectNextItem(int iItem)
 
 void CBasePlayer::SelectItem(const char *pstr)
 {
-	if (!pstr) return;
+	if ( !CanProcessRoundGameplayInput( this ) )
+		return;
+
+	if (!pstr)
+		return;
 	if ( !CanSelectNewWeapon( true ) ) return;
 
 	CBasePlayerItem *pItem = NULL;
@@ -5333,6 +5364,9 @@ void CBasePlayer::SelectItem(const char *pstr)
 
 void CBasePlayer::SelectLastItem(void)
 {
+	if ( !CanProcessRoundGameplayInput( this ) )
+		return;
+
 	if ( !m_pLastItem ) return;
 	if ( m_pActiveItem && !m_pActiveItem->CanHolster() ) return;
 	if ( !CanSelectNewWeapon( true ) ) return;
@@ -5621,6 +5655,12 @@ ImpulseCommands
 
 void CBasePlayer::ImpulseCommands()
 {
+	if ( !CanProcessRoundGameplayInput( this ) )
+	{
+		pev->impulse = 0;
+		return;
+	}
+
 	TraceResult tr; // UNDONE: kill me! This is temporary for PreAlpha CDs
 
 	// Handle use events
@@ -6056,6 +6096,12 @@ Called every frame by the player PostThink
 void CBasePlayer::ItemPostFrame()
 {
 	static int fInSelect = FALSE;
+
+	if ( !CanProcessRoundGameplayInput( this ) )
+	{
+		pev->impulse = 0;
+		return;
+	}
 
 	// check if the player is using a tank
 	if (m_pTank != NULL)
