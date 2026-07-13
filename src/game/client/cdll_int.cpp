@@ -363,6 +363,8 @@ void CL_DLLEXPORT HUD_Init(void)
 	CSvcMessages::Get().Init();
 	EngFuncs_UpdateHooks();
 	console::HudPostInit();
+	// Forcefully disable cl_lw, it's fucked either way. (and no, this is not prediction...)
+	gEngfuncs.pfnClientCmd( "cl_lw 0\n" );
 }
 
 /*
