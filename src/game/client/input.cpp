@@ -36,6 +36,7 @@ extern bool g_bLocalPlayerIsValid;
 
 extern int g_weaponselect;
 extern cl_enginefunc_t gEngfuncs;
+extern void HudAmmo_ClearWeaponSelectionInputState();
 
 bool g_bDecentJumped = false;
 bool g_bLongJumped = false;
@@ -44,6 +45,7 @@ bool g_bBunnyhopJumped = false;
 void IN_Init(void);
 void IN_Move(float frametime, usercmd_t *cmd);
 void IN_Shutdown(void);
+void Input_ClearAttackState();
 void V_Init(void);
 void VectorAngles(const float *forward, float *angles);
 int CL_ButtonBits(int);
@@ -511,7 +513,11 @@ void IN_LeftUp(void) { KeyUp(&in_left); }
 void IN_RightDown(void) { KeyDown(&in_right); }
 void IN_RightUp(void) { KeyUp(&in_right); }
 void IN_DucktapUp(void) { KeyUp(&in_ducktap); }
-void IN_DucktapDown(void) { KeyDown(&in_ducktap); }
+void IN_DucktapDown(void)
+{
+	if ( !HasRoundBegun() ) return;
+	KeyDown(&in_ducktap);
+}
 
 
 void IN_VoiceWheelUp(void)
@@ -619,7 +625,11 @@ void IN_JumpDown(void)
 	CHudSpectator::Get()->HandleButtonsDown(IN_JUMP);
 }
 void IN_JumpUp(void) { KeyUp(&in_jump); }
-void IN_LongJumpDown(void) { KeyDown(&in_longjump); }
+void IN_LongJumpDown(void)
+{
+	if ( !HasRoundBegun() ) return;
+	KeyDown(&in_longjump);
+}
 void IN_LongJumpUp(void) { KeyUp(&in_longjump); }
 void IN_DuckDown(void)
 {
@@ -628,9 +638,17 @@ void IN_DuckDown(void)
 	CHudSpectator::Get()->HandleButtonsDown(IN_DUCK);
 }
 void IN_DuckUp(void) { KeyUp(&in_duck); }
-void IN_ReloadDown(void) { KeyDown(&in_reload); }
+void IN_ReloadDown(void)
+{
+	if ( !HasRoundBegun() ) return;
+	KeyDown(&in_reload);
+}
 void IN_ReloadUp(void) { KeyUp(&in_reload); }
-void IN_UnloadDown(void) { KeyDown(&in_unload); }
+void IN_UnloadDown(void)
+{
+	if ( !HasRoundBegun() ) return;
+	KeyDown(&in_unload);
+}
 void IN_UnloadUp(void) { KeyUp(&in_unload); }
 void IN_GraphDown(void) { KeyDown(&in_graph); }
 void IN_GraphUp(void) { KeyUp(&in_graph); }
@@ -656,6 +674,7 @@ void IN_Cancel(void)
 
 void IN_Impulse(void)
 {
+	if ( !HasRoundBegun() ) return;
 	in_impulse = atoi(gEngfuncs.Cmd_Argv(1));
 }
 
@@ -687,7 +706,7 @@ void IN_MLookUp(void)
 }
 
 // Make sure we clear all input states
-// We don't want the player to keep moving if we force thenm to stop!
+// We don't want blocked gameplay input to carry across round transitions.
 void Input_ClearInputState( kbutton_t *button )
 {
 	button->down[0] = 0;
@@ -711,6 +730,19 @@ void Input_StopAllMovements( bool bForce )
 	Input_ClearInputState(&in_up);
 	Input_ClearInputState(&in_duck);
 	Input_ClearInputState(&in_jump);
+	Input_ClearInputState(&in_longjump);
+	Input_ClearInputState(&in_use);
+	Input_ClearAttackState();
+	Input_ClearInputState(&in_reload);
+	Input_ClearInputState(&in_unload);
+	Input_ClearInputState(&in_ducktap);
+	in_impulse = 0;
+	in_cancel = 0;
+	g_bDecentJumped = false;
+	g_bLongJumped = false;
+	g_bBunnyhopJumped = false;
+	HudAmmo_ClearWeaponSelectionInputState();
+	gHUD.m_iKeyBits &= ~(IN_FORWARD | IN_BACK | IN_MOVELEFT | IN_MOVERIGHT | IN_JUMP | IN_DUCK | IN_ATTACK | IN_ATTACK2 | IN_USE | IN_RELOAD | IN_UNLOAD);
 }
 
 void Input_ClearAttackState()
@@ -718,7 +750,6 @@ void Input_ClearAttackState()
 	Input_ClearInputState(&in_attack);
 	Input_ClearInputState(&in_attack2);
 }
-
 /*
 ===============
 CL_KeyState

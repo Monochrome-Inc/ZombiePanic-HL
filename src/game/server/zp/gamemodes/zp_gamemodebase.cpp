@@ -25,6 +25,41 @@
 static IGameModeBase *s_GameModeBase = nullptr;
 extern ConVar sv_fafo_only;
 
+namespace
+{
+bool ShouldRoundLockPlayerInput( CBasePlayer *pPlayer, ZP::RoundState state )
+{
+	if ( !pPlayer ) return false;
+	if ( !pPlayer->IsConnected() ) return false;
+	if ( !pPlayer->IsAlive() ) return false;
+	if ( pPlayer->IsObserver() ) return false;
+	if ( pPlayer->pev->team == ZP::TEAM_OBSERVER ) return false;
+	return state != ZP::RoundState::RoundState_RoundHasBegun;
+}
+
+void UpdateRoundInputLockForPlayer( CBasePlayer *pPlayer, ZP::RoundState state )
+{
+	if ( !pPlayer ) return;
+	g_engfuncs.pfnSetPhysicsKeyValue( pPlayer->edict(), "zprl", ShouldRoundLockPlayerInput( pPlayer, state ) ? "1" : "0" );
+}
+
+void UpdateRoundInputLockForAllPlayers( ZP::RoundState state )
+{
+	for ( int i = 1; i <= gpGlobals->maxClients; i++ )
+	{
+		CBasePlayer *pPlayer = (CBasePlayer *)UTIL_PlayerByIndex( i );
+		if ( !pPlayer ) continue;
+		UpdateRoundInputLockForPlayer( pPlayer, state );
+	}
+}
+}
+
+void IGameModeBase::SetRoundState( ZP::RoundState state )
+{
+	m_iRoundState = state;
+	UpdateRoundInputLockForAllPlayers( state );
+}
+
 IGameModeBase *ZP::GetCurrentGameMode()
 {
 	return s_GameModeBase;

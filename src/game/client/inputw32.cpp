@@ -47,6 +47,7 @@ enum class MouseMode
 
 extern cl_enginefunc_t gEngfuncs;
 extern int iMouseInUse;
+extern bool HasRoundBegun();
 
 extern kbutton_t in_strafe;
 extern kbutton_t in_mlook;
@@ -889,7 +890,10 @@ void IN_MouseMove(float frametime, usercmd_t *cmd)
 
 		// add mouse X/Y movement to cmd
 		if ((in_strafe.state & 1) || (lookstrafe->value && (in_mlook.state & 1)))
-			cmd->sidemove += m_side->value * mouse_x;
+		{
+			if ( HasRoundBegun() )
+				cmd->sidemove += m_side->value * mouse_x;
+		}
 		else
 			viewangles[YAW] -= m_yaw->value * mouse_x;
 
@@ -905,11 +909,13 @@ void IN_MouseMove(float frametime, usercmd_t *cmd)
 		{
 			if ((in_strafe.state & 1) && gEngfuncs.IsNoClipping())
 			{
-				cmd->upmove -= m_forward->value * mouse_y;
+				if ( HasRoundBegun() )
+					cmd->upmove -= m_forward->value * mouse_y;
 			}
 			else
 			{
-				cmd->forwardmove -= m_forward->value * mouse_y;
+				if ( HasRoundBegun() )
+					cmd->forwardmove -= m_forward->value * mouse_y;
 			}
 		}
 
@@ -1302,6 +1308,7 @@ void IN_JoyMove(float frametime, usercmd_t *cmd)
 		speed = 1;
 
 	aspeed = speed * frametime;
+	const bool bCanMove = HasRoundBegun();
 
 	// loop through the axes
 	for (i = 0; i < JOY_MAX_AXES; i++)
@@ -1363,7 +1370,7 @@ void IN_JoyMove(float frametime, usercmd_t *cmd)
 			else
 			{
 				// user wants forward control to be forward control
-				if (fabs(fAxisValue) > joy_forwardthreshold->value)
+				if (bCanMove && fabs(fAxisValue) > joy_forwardthreshold->value)
 				{
 					cmd->forwardmove += (fAxisValue * joy_forwardsensitivity->value) * speed * GetMaxPossibleSpeed( ZPPlayerMovementDirection_t::DirForward );
 				}
@@ -1371,7 +1378,7 @@ void IN_JoyMove(float frametime, usercmd_t *cmd)
 			break;
 
 		case AxisSide:
-			if (fabs(fAxisValue) > joy_sidethreshold->value)
+			if (bCanMove && fabs(fAxisValue) > joy_sidethreshold->value)
 			{
 				cmd->sidemove += (fAxisValue * joy_sidesensitivity->value) * speed * GetMaxPossibleSpeed( ZPPlayerMovementDirection_t::DirSides );
 			}
@@ -1381,7 +1388,7 @@ void IN_JoyMove(float frametime, usercmd_t *cmd)
 			if ((in_strafe.state & 1) || (lookstrafe->value && (in_jlook.state & 1)))
 			{
 				// user wants turn control to become side control
-				if (fabs(fAxisValue) > joy_sidethreshold->value)
+				if (bCanMove && fabs(fAxisValue) > joy_sidethreshold->value)
 				{
 					cmd->sidemove -= (fAxisValue * joy_sidesensitivity->value) * speed * GetMaxPossibleSpeed( ZPPlayerMovementDirection_t::DirSides );
 				}

@@ -86,6 +86,7 @@ void CBasePlayer::StartObserver(void)
 	ClearBits(pev->flags, FL_DUCKING);
 	pev->deadflag = DEAD_RESPAWNABLE;
 	pev->health = 1;
+	g_engfuncs.pfnSetPhysicsKeyValue( edict(), "zprl", "0" );
 
 	// Clear out the status bar
 	m_fInitHUD = TRUE;

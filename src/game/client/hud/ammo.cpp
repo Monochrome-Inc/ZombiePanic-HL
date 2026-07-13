@@ -38,6 +38,7 @@
 ConVar hud_fastswitch("hud_fastswitch", "0", FCVAR_ARCHIVE, "Controls whether or not weapons can be selected in one keypress");
 ConVar hud_weaponslot_corner_hug("hud_weaponslot_corner_hug", "0", FCVAR_BHL_ARCHIVE, "Hug the weapon slots to the left of the screen");
 extern ConVar cl_cross_zoom;
+extern bool HasRoundBegun();
 
 WEAPON *gpActiveSel; // NULL means off, 1 means just the menu bar, otherwise
     // this points to the active weapon menu item
@@ -51,6 +52,14 @@ WeaponsResource gWR;
 int g_ActiveAmmoIndex = 0;
 
 int g_weaponselect = 0;
+
+void HudAmmo_ClearWeaponSelectionInputState()
+{
+	gpActiveSel = NULL;
+	gpLastSel = NULL;
+	g_weaponselect = 0;
+	gHUD.m_iKeyBits &= ~IN_ATTACK;
+}
 
 #define SET_WEAPON_SELECTION_XPOS 180
 #define SET_WEAPON_SELECTION_YPOS 20
@@ -258,6 +267,12 @@ void CHudAmmo::Think(void)
 	// has the player selected one?
 	if (gHUD.m_iKeyBits & IN_ATTACK || hud_fastswitch.GetInt() == 2)
 	{
+		if ( !HasRoundBegun() )
+		{
+			HudAmmo_ClearWeaponSelectionInputState();
+			return;
+		}
+
 		if (gpActiveSel != (WEAPON *)1)
 		{
 			ServerCmd(gpActiveSel->szName);
@@ -582,13 +597,16 @@ void CHudAmmo::SlotInput(int iSlot)
 	if (g_pViewport && g_pViewport->SlotInput(iSlot))
 		return;
 
+	if ( !HasRoundBegun() )
+	{
+		HudAmmo_ClearWeaponSelectionInputState();
+		return;
+	}
+
 	// Tell the server we selected this weapon slot
 	char szCmd[16];
 	Q_snprintf(szCmd, sizeof(szCmd), "slot %d", iSlot );
 	ServerCmd(szCmd);
-
-	// Old stuff from HL1, not used anymore
-	//gWR.SelectSlot(iSlot, FALSE, 1);
 }
 
 void CHudAmmo::UserCmd_Slot1(void)

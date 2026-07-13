@@ -37,7 +37,7 @@ public:
 	virtual void GiveWeapons(CBasePlayer *pPlayer) = 0;
 
 	// Roundstate
-	void SetRoundState( ZP::RoundState state ) { m_iRoundState = state; }
+	void SetRoundState( ZP::RoundState state );
 	ZP::RoundState GetRoundState() const { return m_iRoundState; }
 	virtual void OnRoundStateThink( ZP::RoundState state ) {};
 
