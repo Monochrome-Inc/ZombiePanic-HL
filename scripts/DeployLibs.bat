@@ -20,6 +20,7 @@ SET file=%file:/=\%
 :: Iterate over lines in %pathsList% and copy the file from argument
 FOR /f "tokens=* delims= usebackq" %%a IN ("%pathsList%") DO (
 	IF NOT "%%a" == "" (
+		ECHO Deploying %%a
 		copy /Y %file% "%%a"
 	)
 )

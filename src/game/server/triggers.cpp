@@ -2130,6 +2130,36 @@ void CLadderZombie::Precache()
 	pev->effects = 0;
 }
 
+// ------------------------------
+// func_block_human/func_block_zombie
+
+// NOTE: Does not work, ShouldCollide does not even work. Don't even bother.
+/*
+class CFuncBlockShared : public CBaseTrigger
+{
+	void Spawn()
+	{
+		CBaseTrigger::Spawn();
+		pev->rendermode = kRenderTransTexture;
+		pev->renderamt = 0;
+		pev->effects = 0;
+
+		pev->angles = g_vecZero;
+		pev->movetype = MOVETYPE_PUSH; // so it doesn't get pushed by anything
+		pev->solid = SOLID_TRIGGER;
+		SET_MODEL(ENT(pev), STRING(pev->model));
+
+		// If it can't move/go away, it's really part of the world
+		pev->flags |= FL_WORLDBRUSH;
+	}
+};
+
+LINK_ENTITY_TO_CLASS(func_block_human, CFuncBlockShared);
+LINK_ENTITY_TO_CLASS(func_block_zombie, CFuncBlockShared);
+*/
+
+// ------------------------------
+
 // ========================== A TRIGGER THAT PUSHES YOU ===============================
 
 class CTriggerPush : public CBaseTrigger
