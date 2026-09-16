@@ -418,7 +418,7 @@ IMPLEMENT_SAVERESTORE(CCyclerSprite, CBaseEntity);
 
 void CCyclerSprite::Spawn(void)
 {
-	pev->solid = SOLID_SLIDEBOX;
+	pev->solid = SOLID_NOT;
 	pev->movetype = MOVETYPE_NONE;
 	pev->takedamage = DAMAGE_YES;
 	pev->effects = 0;

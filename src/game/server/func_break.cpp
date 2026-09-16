@@ -558,6 +558,11 @@ int CBreakable ::TakeDamage(entvars_t *pevInflictor, entvars_t *pevAttacker, flo
 	if (!IsBreakable())
 		return 0;
 
+	// If we did not return true, then refuse the player
+	// to interact with this
+	CBaseEntity *pAttacker = CBaseEntity::Instance(pevAttacker);
+	if ( !IsFilterValid( pAttacker ) ) return 0;
+
 	// if Attacker == Inflictor, the attack was a melee or other instant-hit attack.
 	// (that is, no actual entity projectile was involved in the attack so use the shooter's origin).
 	if (pevAttacker == pevInflictor)
