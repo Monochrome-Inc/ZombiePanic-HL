@@ -2233,13 +2233,13 @@ CBaseEntity *CBasePlayer::FindUseEntity()
 	{
 		if ( i == 0 )
 		{
-			UTIL_TraceLine( searchCenter, searchCenter + gpGlobals->v_forward * 1024, dont_ignore_monsters, ENT(pev), &tr );
+			UTIL_TraceLine( searchCenter, searchCenter + gpGlobals->v_forward * 1024, ignore_monsters, ENT(pev), &tr );
 		}
 		else
 		{
 			Vector down = gpGlobals->v_forward - tangents[i] * gpGlobals->v_up;
 			VectorNormalize(down);
-			UTIL_TraceHull( searchCenter, searchCenter + down * 72, dont_ignore_monsters, head_hull, ENT(pev), &tr );
+			UTIL_TraceHull( searchCenter, searchCenter + down * 72, ignore_monsters, head_hull, ENT(pev), &tr );
 		}
 		pObject = CBaseEntity::Instance( tr.pHit );
 		if ( !pObject ) continue;
@@ -2273,7 +2273,7 @@ CBaseEntity *CBasePlayer::FindUseEntity()
 			// Since this has purely been a radius search to this point, we now
 			// make sure the object isn't behind glass or a grate.
 			TraceResult trCheckOccluded;
-			UTIL_TraceLine( searchCenter, pObject->Center(), dont_ignore_monsters, ENT(pev), &trCheckOccluded );
+			UTIL_TraceLine( searchCenter, pObject->Center(), ignore_monsters, ENT(pev), &trCheckOccluded );
 
 			CBaseEntity *pCheckHit = CBaseEntity::Instance( trCheckOccluded.pHit );
 			if ( trCheckOccluded.flFraction == 1.0 || pCheckHit == pObject )

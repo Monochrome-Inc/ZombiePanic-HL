@@ -44,6 +44,16 @@ public:
 	void Spawn(void);
 	void Restart(void);
 	virtual void Think(void);
+	virtual void KeyValue( KeyValueData *pkvd )
+	{
+		if ( FStrEq( pkvd->szKeyName, "scale" ) )
+		{
+			m_flScale = atof(pkvd->szValue);
+			pkvd->fHandled = TRUE;
+		}
+		else
+			CBaseMonster::KeyValue( pkvd );
+	}
 	//void Pain( float flDamage );
 	void Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value);
 
@@ -54,6 +64,8 @@ public:
 	virtual int Save(CSave &save);
 	virtual int Restore(CRestore &restore);
 	static TYPEDESCRIPTION m_SaveData[];
+
+	float m_flScale = 1.0f;
 
 	int m_animate;
 
@@ -243,6 +255,8 @@ void CCycler ::GenericCyclerSpawn(char *szModel, Vector vecMin, Vector vecMax)
 	CCycler::Spawn();
 
 	UTIL_SetSize(pev, vecMin, vecMax);
+
+	pev->scale = m_flScale;
 }
 
 void CCycler ::Spawn()
