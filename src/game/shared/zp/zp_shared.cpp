@@ -74,8 +74,8 @@ std::vector<RequiredStepsTable> m_MarathonSteps = {
 	RequiredStepsTable( MAP_ZP_INDUSTRY, 1 ),
 	RequiredStepsTable( MAP_ZP_CONTINGENCY, 1 ),
 	RequiredStepsTable( MAP_ZP_HAUNTED, 1 ),
-	//RequiredStepsTable( MAP_ZP_RUINS, 1 ),
-	//RequiredStepsTable( MAP_ZP_HOTEL, 1 ),
+	RequiredStepsTable( MAP_ZP_RUINS, 1 ),
+	RequiredStepsTable( MAP_ZP_HOTEL, 1 ),
 	//RequiredStepsTable( MAP_ZP_TOWN, 1 ),
 	//RequiredStepsTable( MAP_ZP_MANSION, 1 ),
 	RequiredStepsTable( MAP_ZPO_CONTINGENCY, 1 ),
@@ -87,7 +87,9 @@ std::vector<RequiredStepsTable> m_MarathonSteps = {
 	RequiredStepsTable( MAP_ZPH_HAUNTED, 1 ),
 	RequiredStepsTable( MAP_ZPH_SANTERIA, 1 ),
 	RequiredStepsTable( MAP_ZPH_THELABS, 1 ),
-	RequiredStepsTable( MAP_ZPH_CONTINGENCY, 1 )
+	RequiredStepsTable( MAP_ZPH_CONTINGENCY, 1 ),
+	RequiredStepsTable( MAP_ZPH_HOTEL, 1 ),
+	RequiredStepsTable( MAP_ZPH_RUINS, 1 )
 };
 
 std::vector<RequiredStepsTable> m_MapsSurvivalSteps = {
@@ -98,10 +100,23 @@ std::vector<RequiredStepsTable> m_MapsSurvivalSteps = {
 	RequiredStepsTable( MAP_ZP_INDUSTRY, 1 ),
 	RequiredStepsTable( MAP_ZP_CONTINGENCY, 1 ),
 	RequiredStepsTable( MAP_ZP_HAUNTED, 1 ),
-	//RequiredStepsTable( MAP_ZP_RUINS, 1 ),
-	//RequiredStepsTable( MAP_ZP_HOTEL, 1 ),
-	//RequiredStepsTable( MAP_ZP_TOWN, 1 ),
-	//RequiredStepsTable( MAP_ZP_MANSION, 1 )
+	RequiredStepsTable( MAP_ZP_RUINS, 1 ),
+	RequiredStepsTable( MAP_ZP_HOTEL, 1 ),
+	RequiredStepsTable( MAP_ZP_TOWN, 1 ),
+	RequiredStepsTable( MAP_ZP_MANSION, 1 )
+};
+
+std::vector<RequiredStepsTable> m_MapsHardcoreSteps = {
+	RequiredStepsTable( MAP_ZPH_EASTSIDE, 1 ),
+	RequiredStepsTable( MAP_ZPH_INDUSTRY, 1 ),
+	RequiredStepsTable( MAP_ZPH_HAUNTED, 1 ),
+	RequiredStepsTable( MAP_ZPH_SANTERIA, 1 ),
+	RequiredStepsTable( MAP_ZPH_THELABS, 1 ),
+	RequiredStepsTable( MAP_ZPH_CONTINGENCY, 1 ),
+	RequiredStepsTable( MAP_ZPH_HOTEL, 1 ),
+	RequiredStepsTable( MAP_ZPH_RUINS, 1 ),
+	RequiredStepsTable( MAP_ZPH_TOWN, 1 ),
+	RequiredStepsTable( MAP_ZPH_MANSION, 1 )
 };
 
 std::vector<RequiredStepsTable> m_MapsObjectiveSteps = {
@@ -189,6 +204,7 @@ static DialogAchievementData g_DAchievements[] =
 	_ACH_ADD_ID_LIST(MARATHON,					CATEGORY_MAPS,			INVALID_STAT, m_MarathonSteps),
 	_ACH_ADD_ID_LIST(PLAY_ALL_SURVIVAL,			CATEGORY_MAPS,			INVALID_STAT, m_MapsSurvivalSteps),
 	_ACH_ADD_ID_LIST(PLAY_ALL_OBJECTIVE,		CATEGORY_MAPS,			INVALID_STAT, m_MapsObjectiveSteps),
+	_ACH_ADD_ID_LIST(PLAY_ALL_HARDCORE,			CATEGORY_MAPS,			INVALID_STAT, m_MapsHardcoreSteps),
 
 	_ACH_ADD_ID(FIRST_ESCAPE,					CATEGORY_GENERAL,		INVALID_STAT),
 	_ACH_ADD_ID(ESCAPE_ARTIST,					CATEGORY_GENERAL,		ZP_ESCAPE_ARTIST),

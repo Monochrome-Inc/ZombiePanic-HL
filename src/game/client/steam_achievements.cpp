@@ -23,8 +23,8 @@ static MapStatCheck_t g_MapStatChecks[] = {
 	_MAP_STAT(zp_industry, MAPSTAT_SURVIVAL, MAP_ZP_INDUSTRY),
 	_MAP_STAT(zp_contingency, MAPSTAT_SURVIVAL, MAP_ZP_CONTINGENCY),
 	_MAP_STAT(zp_haunted, MAPSTAT_SURVIVAL, MAP_ZP_HAUNTED),
-	//_MAP_STAT(zp_hotel, MAPSTAT_SURVIVAL, MAP_ZP_HOTEL),
-	//_MAP_STAT(zp_ruins, MAPSTAT_SURVIVAL, MAP_ZP_RUINS),
+	_MAP_STAT(zp_hotel, MAPSTAT_SURVIVAL, MAP_ZP_HOTEL),
+	_MAP_STAT(zp_ruins, MAPSTAT_SURVIVAL, MAP_ZP_RUINS),
 	//_MAP_STAT(zp_town, MAPSTAT_SURVIVAL, MAP_ZP_TOWN),
 	//_MAP_STAT(zp_mansion, MAPSTAT_SURVIVAL, MAP_ZP_MANSION),
 
@@ -41,6 +41,8 @@ static MapStatCheck_t g_MapStatChecks[] = {
 	_MAP_STAT(zph_haunted, MAPSTAT_HARDCORE, MAP_ZPH_HAUNTED),
 	_MAP_STAT(zph_santeria, MAPSTAT_HARDCORE, MAP_ZPH_SANTERIA),
 	_MAP_STAT(zph_contingency, MAPSTAT_HARDCORE, MAP_ZPH_CONTINGENCY),
+	_MAP_STAT(zph_hotel, MAPSTAT_HARDCORE, MAP_ZPH_HOTEL),
+	_MAP_STAT(zph_ruins, MAPSTAT_HARDCORE, MAP_ZPH_RUINS),
 };
 
 // ================================================================= \\
