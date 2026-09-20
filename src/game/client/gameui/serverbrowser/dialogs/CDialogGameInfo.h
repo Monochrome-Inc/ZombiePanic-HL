@@ -74,6 +74,7 @@ protected:
 	}
 
 	// response from the get password dialog
+	MESSAGE_FUNC( OnPasswordDialogClosed, "PasswordDialogClosed" );
 	MESSAGE_FUNC_CHARPTR( OnJoinServerWithPassword, "JoinServerWithPassword", password );
 	MESSAGE_FUNC_INT_INT( OnConnectToGame, "ConnectedToGame", ip, port );
 
@@ -101,6 +102,7 @@ private:
 	vgui2::RadioButton *m_pAutoRetryAlert;
 	vgui2::RadioButton *m_pAutoRetryJoin;
 	vgui2::ListPanel *m_pPlayerList;
+	vgui2::Frame *m_pPasswordDialog;
 
 	enum { PING_TIMES_MAX = 4 };
 

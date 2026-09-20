@@ -6,9 +6,7 @@
 #include "CVACBannedDialog.h"
 #include "gameui/gameui_viewport.h"
 #include "../CServerBrowser.h"
-#if USE_PASSWORD_DIALOG
 #include "CDialogServerPassword.h"
-#endif
 
 static const long RETRY_TIME = 10000;		// refresh server every 10 seconds
 static const long CHALLENGE_ENTRIES = 1024;
@@ -91,6 +89,8 @@ CDialogGameInfo::CDialogGameInfo( vgui2::Panel *parent, int nIP, int iPort, unsi
 	RegisterControlSettingsFile( "Servers/DialogGameInfo_SinglePlayer.res" );
 	RegisterControlSettingsFile( "Servers/DialogGameInfo_AutoRetry.res" );
 	MoveToCenterOfScreen();
+
+	m_pPasswordDialog = nullptr;
 }
 
 
@@ -463,6 +463,9 @@ void CDialogGameInfo::OnTick()
 		m_iRequestRetry = 0;
 		RequestInfo();
 	}
+
+	// If we have a password dialog, we won't move this to the front.
+	if ( m_pPasswordDialog ) return;
 	MoveToFront();
 }
 
@@ -515,14 +518,12 @@ void CDialogGameInfo::ServerFailedToRespond()
 void CDialogGameInfo::ApplyConnectCommand( const gameserveritem_t &server )
 {
 	char command[ 256 ];
-#if USE_PASSWORD_DIALOG
 	// set the server password, if any
 	if ( m_szPassword[0] )
 	{
 		Q_snprintf( command, Q_ARRAYSIZE( command ), "password \"%s\"\n", m_szPassword );
 		EngineClientCmd( command );
 	}
-#endif
 	// send engine command to change servers
 	Q_snprintf( command, Q_ARRAYSIZE( command ), "wait;wait;wait;wait;connect %s\n", server.m_NetAdr.GetConnectionAddressString() );
 	EngineClientCmd( command );
@@ -545,16 +546,21 @@ void CDialogGameInfo::ConnectToServer()
 		return;
 	}
 
-#if USE_PASSWORD_DIALOG
+	if ( m_pPasswordDialog )
+	{
+		m_pPasswordDialog->MoveToFront();
+		return;
+	}
+
 	// check to see if we need a password
 	if ( m_Server.m_bPassword && !m_szPassword[0] )
 	{
 		CDialogServerPassword *box = new CDialogServerPassword( this );
+		m_pPasswordDialog = box;
 		box->AddActionSignalTarget( this );
-		box->Activate( m_Server.GetName(), 0 );
+		box->Activate( m_Server.GetName() );
 		return;
 	}
-#endif
 
 	// check the player count
 	if ( m_Server.m_nPlayers >= m_Server.m_nMaxPlayers )
@@ -581,11 +587,19 @@ void CDialogGameInfo::RefreshComplete( EMatchMakingServerResponse response )
 
 void CDialogGameInfo::OnJoinServerWithPassword(const char *password)
 {
+	m_pPasswordDialog = nullptr;
+
 	// copy out the password
 	Q_strncpy(m_szPassword, password, sizeof(m_szPassword));
 
 	// retry connecting to the server again
 	OnConnect();
+}
+
+
+void CDialogGameInfo::OnPasswordDialogClosed()
+{
+	m_pPasswordDialog = nullptr;
 }
 
 
