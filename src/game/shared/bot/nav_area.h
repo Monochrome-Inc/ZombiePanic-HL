@@ -131,8 +131,8 @@ public:
 	void SetFlags( unsigned char flags )		{ m_flags |= flags; }		///< FOR INTERNAL USE ONLY
 	unsigned char GetFlags( void ) const		{ return m_flags; }
 
-	void Save( int fd, unsigned int version ) const;
-	void Load( SteamFile *file, unsigned int version );
+	void Save( CUtlBuffer &fileBuffer, unsigned int version ) const;
+	void Load( CUtlBuffer &fileBuffer, unsigned int version );
 
 	const Vector *GetPosition( void ) const		{ return &m_pos; }	///< get the position of the hiding spot
 	unsigned int GetID( void ) const			{ return m_id; }
@@ -207,8 +207,8 @@ public:
 	void Disconnect( CNavArea *area );							///< disconnect this area from given area
 
 	void Save( FILE *fp ) const;
-	void Save( int fd, unsigned int version );
-	void Load( SteamFile *file, unsigned int version );
+	void Save( CUtlBuffer &fileBuffer, unsigned int version );
+	void Load( CUtlBuffer &fileBuffer, unsigned int version );
 	NavErrorType PostLoad( void );
 
 	unsigned int GetID( void ) const						{ return m_id; }

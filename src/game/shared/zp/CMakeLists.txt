@@ -6,3 +6,4 @@ add_sources(
 )
 
 add_subdirectory( weapons )
+add_subdirectory( bot )

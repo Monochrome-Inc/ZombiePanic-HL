@@ -27,6 +27,7 @@ const float HalfHumanHeight = 36.0f;
 const float HumanHeight = 72.0f;
 
 #define NAV_MAGIC_NUMBER 0xFEEDFACE				///< to help identify nav files
+#define NAV_FILE_VERSION 5						///< current version of nav file format
 
 /**
  * A place is a named group of navigation areas
@@ -42,6 +43,7 @@ enum NavErrorType
 	NAV_INVALID_FILE,
 	NAV_BAD_FILE_VERSION,
 	NAV_CORRUPT_DATA,
+	NAV_FILE_OUT_OF_DATE,
 };
 
 enum NavAttributeType

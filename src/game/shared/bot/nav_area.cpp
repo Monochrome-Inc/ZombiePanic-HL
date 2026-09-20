@@ -35,6 +35,9 @@
 #include "cs_bot.h"
 #include "cs_bot_manager.h"
 #include "hostage.h"
+#else
+#include <tier1/utlbuffer.h>
+#include <zp/bot/zp_bot_manager.h>
 #endif
 
 #include "nav.h"
@@ -129,18 +132,22 @@ HidingSpot::HidingSpot( const Vector *pos, unsigned char flags )
 	TheHidingSpotList.push_back( this );
 }
 
-void HidingSpot::Save( int fd, unsigned int version ) const
+void HidingSpot::Save( CUtlBuffer &fileBuffer, unsigned int version ) const
 {
-	_write( fd, &m_id, sizeof(unsigned int) );
-	_write( fd, &m_pos, 3 * sizeof(float) );
-	_write( fd, &m_flags, sizeof(unsigned char) );
+	fileBuffer.PutUnsignedInt( m_id );
+	fileBuffer.PutFloat( m_pos.x );
+	fileBuffer.PutFloat( m_pos.y );
+	fileBuffer.PutFloat( m_pos.z );
+	fileBuffer.PutUnsignedChar( m_flags );
 }
 
-void HidingSpot::Load( SteamFile *file, unsigned int version )
+void HidingSpot::Load( CUtlBuffer &fileBuffer, unsigned int version )
 {
-	file->Read( &m_id, sizeof(unsigned int) );
-	file->Read( &m_pos, 3 * sizeof(float) );
-	file->Read( &m_flags, sizeof(unsigned char) );
+	m_id = fileBuffer.GetUnsignedInt();
+	m_pos.x = fileBuffer.GetFloat();
+	m_pos.y = fileBuffer.GetFloat();
+	m_pos.z = fileBuffer.GetFloat();
+	m_flags = fileBuffer.GetUnsignedChar();
 
 	// update next ID to avoid ID collisions by later spots
 	if (m_id >= m_nextID)
@@ -3809,7 +3816,7 @@ void CNavArea::DrawConnectedAreas( void )
 	if (player == NULL)
 		return;
 
-	CZPBotManager *ctrl = static_cast<CZPBotManager *>( TheBots );
+	CZPBotManager *ctrl = CZPBotManager::GetInstance();
 	const float maxRange = 500.0f;
 
 	// draw self
@@ -3984,7 +3991,7 @@ public:
 
 	bool operator() ( CNavArea *area )
 	{
-		CCSBotManager *ctrl = static_cast<CCSBotManager *>( TheBots );
+		CZPBotManager *ctrl = CZPBotManager::GetInstance();
 
 		if (area->GetPlace() != m_initialPlace)
 			return false;
@@ -4005,7 +4012,7 @@ private:
  */
 void EditNavAreas( NavEditCmdType cmd )
 {
-	CCSBotManager *ctrl = static_cast<CCSBotManager *>( TheBots );
+	CZPBotManager *ctrl = CZPBotManager::GetInstance();
 
 	CBasePlayer *player = UTIL_GetLocalPlayer();
 	if (player == NULL)
@@ -4161,6 +4168,7 @@ void EditNavAreas( NavEditCmdType cmd )
 				char attrib[80];
 				char locName[80];
 
+#ifdef CSTRIKE_DLL
 				if (area->GetPlace())
 				{
 					const char *name = TheBotPhrases->IDToName( area->GetPlace() );
@@ -4170,14 +4178,13 @@ void EditNavAreas( NavEditCmdType cmd )
 						strcpy( locName, "ERROR" );
 				}
 				else
-				{
 					locName[0] = '\000';
-				}
+#else
+				locName[0] = '\000';
+#endif
 
 				if (isPlaceMode)
-				{
 					attrib[0] = '\000';
-				}
 				else
 				{
 					sprintf( attrib, "%s%s%s%s", 
@@ -4189,7 +4196,7 @@ void EditNavAreas( NavEditCmdType cmd )
 
 				sprintf( buffer, "Area #%d %s %s\n", area->GetID(), locName, attrib );
 
-				UTIL_SayTextAll( buffer, player );
+				UTIL_SayTextAll( CHAT_FILTER_PUBLICCHAT, buffer, player );
 
 				// do "place painting"
 				if (isPlacePainting)
@@ -4385,7 +4392,7 @@ void EditNavAreas( NavEditCmdType cmd )
 
 							char buffer[80];
 							sprintf( buffer, "Marked Area is connected to %d other Areas\n", connected );
-							UTIL_SayTextAll( buffer, player );
+							UTIL_SayTextAll( CHAT_FILTER_PUBLICCHAT, buffer, player );
 						}
 						break;
 
@@ -4433,7 +4440,7 @@ void EditNavAreas( NavEditCmdType cmd )
 
 								char buffer[80];
 								sprintf( buffer, "Marked Area is connected to %d other Areas - there are %d total unnamed areas\n", connected, totalUnnamedAreas );
-								UTIL_SayTextAll( buffer, player );
+								UTIL_SayTextAll( CHAT_FILTER_PUBLICCHAT, buffer, player );
 							}
 						}
 						break;
@@ -4442,7 +4449,7 @@ void EditNavAreas( NavEditCmdType cmd )
 						if (markedArea)
 						{
 							CBasePlayer *pLocalPlayer = UTIL_GetLocalPlayer();
-							if ( pLocalPlayer && pLocalPlayer->pev->team == SPECTATOR && pLocalPlayer->pev->iuser1 == OBS_ROAMING )
+							if ( pLocalPlayer && pLocalPlayer->pev->team == ZP::TEAM_OBSERVER && pLocalPlayer->pev->iuser1 == OBS_ROAMING )
 							{
 								Vector origin = *markedArea->GetCenter() + Vector( 0, 0, 0.75f * HumanHeight );
 								UTIL_SetOrigin( pLocalPlayer->pev, origin );
