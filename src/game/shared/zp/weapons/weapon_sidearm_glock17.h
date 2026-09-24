@@ -12,7 +12,7 @@ class CWeaponSideArmGlock17 : public CWeaponBase
 public:
 	ZPWeaponID GetWeaponID() override { return WEAPON_GLOCK17; }
 	bool IsAutomaticWeapon() const override { return false; }
-	const char *GetEmptySound() const override { return "weapons/glock/dryfire.wav"; }
+	const char *GetEmptySound() const override { return "weapons/glock17/dryfire.wav"; }
 	float DoHolsterAnimation() override;
 	void Spawn( void );
 	void Precache( void );

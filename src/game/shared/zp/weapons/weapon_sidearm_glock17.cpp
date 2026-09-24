@@ -9,30 +9,30 @@ PRECACHE_WEAPON_REGISTER( weapon_glock17 );
 float CWeaponSideArmGlock17::DoHolsterAnimation()
 {
 	SendWeaponAnim( IsEmpty() ? ANIM_PISTOL_HOLSTER_EMPTY : ANIM_PISTOL_HOLSTER );
-	return GetAnimationTime( IsEmpty() ? 24 : 18, 35 );
+	return GetAnimationTime( 24, 60 );
 }
 
 float CWeaponSideArmGlock17::DoWeaponUnload()
 {
 	SendWeaponAnim( ANIM_PISTOL_UNLOAD );
-	AddWeaponSound( "weapons/glock17/clipout_unload.wav", 1, ATTN_NORM, GetAnimationTime( 8, 32 ) );
-	AddWeaponSound( "weapons/glock17/clipin.wav", 1, ATTN_NORM, GetAnimationTime( 33, 32 ) );
-	AddWeaponSound( "weapons/glock17/slideback.wav", 1, ATTN_NORM, GetAnimationTime( 54, 32 ) );
-	return GetAnimationTime( 87, 32 );
+	AddWeaponSound( "weapons/glock17/clipout_unload.wav", 1, ATTN_NORM, GetAnimationTime( 8, 25 ) );
+	AddWeaponSound( "weapons/glock17/clipin_unload.wav", 1, ATTN_NORM, GetAnimationTime( 34, 25 ) );
+	AddWeaponSound( "weapons/glock17/slideback.wav", 1, ATTN_NORM, GetAnimationTime( 53, 25 ) );
+	return GetAnimationTime( 86, 25 );
 }
 
 void CWeaponSideArmGlock17::Spawn()
 {
 	Precache();
-	SET_MODEL(ENT(pev), "models/w_ppk.mdl");
+	SET_MODEL(ENT(pev), "models/w_glock17.mdl");
 	DefaultSpawn();
 }
 
 void CWeaponSideArmGlock17::Precache(void)
 {
-	PRECACHE_MODEL("models/v_ppk.mdl");
-	PRECACHE_MODEL("models/w_ppk.mdl");
-	PRECACHE_MODEL("models/p_ppk.mdl");
+	PRECACHE_MODEL("models/v_glock17.mdl");
+	PRECACHE_MODEL("models/w_glock17.mdl");
+	PRECACHE_MODEL("models/p_glock17.mdl");
 
 	PRECACHE_MODEL("models/shell.mdl"); // brass shell
 
@@ -62,7 +62,7 @@ int CWeaponSideArmGlock17::AddToPlayer(CBasePlayer *pPlayer)
 
 float CWeaponSideArmGlock17::Deploy()
 {
-	DoDeploy( "models/v_ppk.mdl", "models/p_ppk.mdl", IsEmpty() ? ANIM_PISTOL_DRAW_EMPTY : ANIM_PISTOL_DRAW, "onehanded" );
+	DoDeploy( "models/v_glock17.mdl", "models/p_glock17.mdl", IsEmpty() ? ANIM_PISTOL_DRAW_EMPTY : ANIM_PISTOL_DRAW, "onehanded" );
 	return GetAnimationTime( 26, 60 );
 }
 
@@ -112,7 +112,7 @@ void CWeaponSideArmGlock17::PrimaryAttack(void)
 	vecAiming = m_pPlayer->GetAutoaimVector(AUTOAIM_10DEGREES);
 
 	Vector vecDir;
-	vecDir = m_pPlayer->FireBulletsPlayer(iBullets(), vecSrc, vecAiming, Vector(PrimaryWeaponSpread(), PrimaryWeaponSpread(), PrimaryWeaponSpread()), 8192, BULLET_PLAYER_PPK, 0, 0, m_pPlayer->pev, m_pPlayer->random_seed);
+	vecDir = m_pPlayer->FireBulletsPlayer(iBullets(), vecSrc, vecAiming, Vector(PrimaryWeaponSpread(), PrimaryWeaponSpread(), PrimaryWeaponSpread()), 8192, BULLET_PLAYER_GLOCK, 0, 0, m_pPlayer->pev, m_pPlayer->random_seed);
 
 	PLAYBACK_EVENT_FULL(flags, m_pPlayer->edict(), m_nEventPrimary, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, vecDir.x, vecDir.y, 0, 0, IsEmpty() ? 1 : 0, 0);
 
@@ -127,23 +127,16 @@ void CWeaponSideArmGlock17::PrimaryAttack(void)
 
 void CWeaponSideArmGlock17::Reload(void)
 {
-	if (m_pPlayer->ammo_longrifle <= 0)
+	if (m_pPlayer->ammo_9mm <= 0)
 		return;
 
-	int iResult = DefaultReload( IsEmpty() ? ANIM_PISTOL_RELOAD_EMPTY : ANIM_PISTOL_RELOAD, GetAnimationTime( 60, 32 ) );
+	int iResult = DefaultReload( IsEmpty() ? ANIM_PISTOL_RELOAD_EMPTY : ANIM_PISTOL_RELOAD, GetAnimationTime( 60, 25 ) );
 	if ( iResult )
 	{
+		AddWeaponSound( "weapons/glock17/clipout.wav", 1, ATTN_NORM, GetAnimationTime( 8, 25 ) );
+		AddWeaponSound( "weapons/glock17/clipin.wav", 1, ATTN_NORM, GetAnimationTime( 34, 25 ) );
 		if ( IsEmpty() )
-		{
-			AddWeaponSound( "weapons/glock17/clipout.wav", 1, ATTN_NORM, GetAnimationTime( 10, 32 ) );
-			AddWeaponSound( "weapons/glock17/clipin.wav", 1, ATTN_NORM, GetAnimationTime( 32, 32 ) );
-			AddWeaponSound( "weapons/glock17/slideforward.wav", 1, ATTN_NORM, GetAnimationTime( 43, 32 ) );
-		}
-		else
-		{
-			AddWeaponSound( "weapons/glock17/clipout.wav", 1, ATTN_NORM, GetAnimationTime( 8, 32 ) );
-			AddWeaponSound( "weapons/glock17/clipin.wav", 1, ATTN_NORM, GetAnimationTime( 36, 32 ) );
-		}
+			AddWeaponSound( "weapons/glock17/slideforward.wav", 1, ATTN_NORM, GetAnimationTime( 43, 25 ) );
 	}
 }
 
@@ -161,18 +154,18 @@ void CWeaponSideArmGlock17::WeaponIdle(void)
 	{
 	case 0:
 		iAnim = IsEmpty() ? ANIM_PISTOL_IDLE1_EMPTY : ANIM_PISTOL_IDLE1;
-		flTime = GetAnimationTime( 41, 10 );
+		flTime = GetAnimationTime( 43, 10 );
 		break;
 
 	default:
 	case 1:
 		iAnim = IsEmpty() ? ANIM_PISTOL_IDLE2_EMPTY : ANIM_PISTOL_IDLE2;
-		flTime = GetAnimationTime( 41, 10 );
+		flTime = GetAnimationTime( 43, 20 );
 		break;
 
 	case 2:
 		iAnim = IsEmpty() ? ANIM_PISTOL_IDLE3_EMPTY : ANIM_PISTOL_IDLE3;
-		flTime = GetAnimationTime( 41, 10 );
+		flTime = GetAnimationTime( 46, 30 );
 		break;
 	}
 
