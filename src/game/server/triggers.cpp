@@ -760,6 +760,8 @@ void CTriggerSnowstorm::SnowstormTouch( CBaseEntity* pOther )
 	if ( !pOther ) return;
 	// We only care about players.
 	if ( !pOther->IsPlayer() ) return;
+	// If this is a zombie, we ignore.
+	if ( pOther->pev->team == ZP::TEAM_ZOMBIE ) return;
 
 	for (size_t i = 0; i < m_List.size(); i++)
 	{
