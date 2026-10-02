@@ -104,8 +104,6 @@ cvar_t mp_dmg_gauss_secondary = { "mp_dmg_gauss_secondary", "200", FCVAR_SERVER 
 cvar_t mp_dmg_egon = { "mp_dmg_egon", "20", FCVAR_SERVER };
 cvar_t mp_dmg_hornet = { "mp_dmg_hornet", "10", FCVAR_SERVER };
 cvar_t mp_dmg_hgrenade = { "mp_dmg_hgrenade", "100", FCVAR_SERVER };
-cvar_t mp_dmg_satchel = { "mp_dmg_satchel", "120", FCVAR_SERVER };
-cvar_t mp_dmg_tripmine = { "mp_dmg_tripmine", "150", FCVAR_SERVER };
 cvar_t mp_dmg_m203 = { "mp_dmg_m203", "100", FCVAR_SERVER };
 cvar_t mp_item_armor = { "mp_item_armor", "35", FCVAR_SERVER };
 cvar_t mp_item_medkit = { "mp_item_medkit", "50", FCVAR_SERVER };
@@ -621,8 +619,6 @@ void GameDLLInit(void)
 	CVAR_REGISTER(&mp_dmg_egon);
 	CVAR_REGISTER(&mp_dmg_hornet);
 	CVAR_REGISTER(&mp_dmg_hgrenade);
-	CVAR_REGISTER(&mp_dmg_satchel);
-	CVAR_REGISTER(&mp_dmg_tripmine);
 	CVAR_REGISTER(&mp_dmg_m203);
 	CVAR_REGISTER(&mp_item_medkit);
 	CVAR_REGISTER(&mp_item_medkit_medium);

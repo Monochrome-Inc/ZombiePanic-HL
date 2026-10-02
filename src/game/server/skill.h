@@ -108,7 +108,6 @@ struct skilldata_t
 	float plrDmgEgonWide;
 	float plrDmgHornet;
 	float plrDmgHandGrenade;
-	float plrDmgSatchel;
 	float plrDmgTripmine;
 	float plrDmgGaussSecondary;
 	float plrDmgCrossbowScope; // normal bolt (used only in multiplayer)

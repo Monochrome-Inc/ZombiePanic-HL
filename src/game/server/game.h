@@ -72,8 +72,6 @@ extern cvar_t mp_dmg_gauss_secondary;
 extern cvar_t mp_dmg_egon;
 extern cvar_t mp_dmg_hornet;
 extern cvar_t mp_dmg_hgrenade;
-extern cvar_t mp_dmg_satchel;
-extern cvar_t mp_dmg_tripmine;
 extern cvar_t mp_dmg_m203;
 extern cvar_t mp_item_medkit;
 extern cvar_t mp_item_medkit_medium;

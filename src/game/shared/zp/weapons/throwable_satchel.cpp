@@ -37,7 +37,6 @@ void CThrowableSatchelCharge::Spawn(void)
 	pev->gravity = 0.5;
 	pev->friction = 0.8;
 
-	pev->dmg = gSkillData.plrDmgSatchel;
 	// ResetSequenceInfo( );
 	pev->sequence = 1;
 	m_flExplodeRange = 300.0f;
@@ -201,7 +200,7 @@ void CThrowableSatchelCharge::IEDExplode()
 	pev->owner = NULL; // can't traceline attack owner if this is set
 	pev->team = pevOwner ? pevOwner->team : ZP::TEAM_SURVIVIOR;
 
-	RadiusDamage( pev, pevOwner, pev->dmg, CLASS_NONE, DMG_BLAST, m_flExplodeRange );
+	RadiusDamage( pev, pevOwner, 500, CLASS_NONE, DMG_BLAST, m_flExplodeRange );
 
 	if (RANDOM_FLOAT(0, 1) < 0.5)
 		UTIL_DecalTrace( &tr, DECAL_SCORCH1 );

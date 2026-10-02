@@ -194,12 +194,6 @@ void CHalfLifeMultiplay::RefreshSkillData(void)
 	// Hand Grenade
 	gSkillData.plrDmgHandGrenade = mp_dmg_hgrenade.value;
 
-	// Satchel Charge
-	gSkillData.plrDmgSatchel = mp_dmg_satchel.value;
-
-	// Tripmine
-	gSkillData.plrDmgTripmine = mp_dmg_tripmine.value;
-
 	// hornet
 	gSkillData.plrDmgHornet = mp_dmg_hornet.value;
 
