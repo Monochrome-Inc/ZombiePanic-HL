@@ -138,7 +138,6 @@ void CWeaponBaseSingleAction::PrimaryAttack( void )
 	// player "shoot" animation
 	m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
 
-	OnRequestedAnimation( ANIM_PRIMARYATTACK );
 	OnWeaponPrimaryAttack();
 
 	if (!m_iClip && m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0)
@@ -146,6 +145,7 @@ void CWeaponBaseSingleAction::PrimaryAttack( void )
 		m_pPlayer->SetSuitUpdate("!HEV_AMO0", FALSE, 0);
 
 	m_flTimeWeaponIdle = m_flNextSecondaryAttack = m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + PrimaryFireRate();
+	OnRequestedAnimation( ANIM_PRIMARYATTACK );
 
 	m_fInSpecialReload = 0;
 	m_bRequirePumping = true;

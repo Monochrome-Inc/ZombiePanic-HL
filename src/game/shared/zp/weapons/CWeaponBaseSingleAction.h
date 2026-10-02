@@ -16,7 +16,7 @@ public:
 	virtual void ItemPostFrame( void );
 	void WeaponPump();
 	void ReloadEnd();
-	void Reload( void ) override;
+	virtual void Reload( void );
 	void PrimaryAttack( void ) override;
 	virtual bool CanPrimaryAttack();
 	virtual void OnWeaponPrimaryAttack() {}

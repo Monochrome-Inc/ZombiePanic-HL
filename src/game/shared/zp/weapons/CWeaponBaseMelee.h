@@ -11,27 +11,12 @@
 #define MELEE_MAX_ATTACKMAP_TRACES 2
 #define MELEE_MAX_ATTACKMAP_TRACER_SETS 2
 
-class CWeaponBaseMelee : public CWeaponBase
+class IMeleeBaseShared
 {
-	DECLARE_CLASS_SIMPLE( CWeaponBaseMelee, CWeaponBase );
-
 public:
-	bool IsMeleeWeapon() override { return true; }
-	virtual bool CanUseHeavyAttack() const { return false; }
-	void LoadMeleeConfigFile();
+	void LoadMeleeConfigFile( ZPWeaponID nWepID );
+
 	int GetMeleeDamageTypeFromString( const char *szDmgType ) const;
-	void Spawn( void );
-	virtual void Precache( void ) {}
-	int AddToPlayer( CBasePlayer *pPlayer );
-
-	void PrimaryAttack( void );
-	void SecondaryAttack( void );
-	void WeaponIdle();
-
-	// Default deploy and holster animations, make sure you override these.
-	virtual float Deploy( void );
-	virtual float DoHolsterAnimation();
-	virtual float DoWeaponIdleAnimation( int iAnim );
 
 	enum MeleeAttackType
 	{
@@ -47,9 +32,10 @@ public:
 		HIT_ENTITY
 	};
 
-	bool DidMeleeAttackHit( MeleeAttackType attackTrace );
-	WhatDidWeHit DoAttackTrace( MeleeAttackType attackType, int iTracerSet, bool bDoHullTrace );
-	void DoMeleeAttack();
+	bool DidMeleeAttackHit( CWeaponBase *pWeapon, MeleeAttackType attackTrace, bool &bHitWorld );
+	WhatDidWeHit DoAttackTrace( CWeaponBase *pWeapon, MeleeAttackType attackType, int iTracerSet, bool bDoHullTrace );
+	void DoMeleeAttack( CWeaponBase *pWeapon );
+	virtual int DoMeleeAnimation( CWeaponBase *pWeapon );
 
 	bool IsAttackInProgress() const { return ( n_meleeAttackType != MELEE_ATTACK_NONE ); }
 	bool IsInHeavyAttack() const { return ( n_meleeAttackType == MELEE_ATTACK_HEAVY ); }
@@ -67,9 +53,11 @@ public:
 	float GetMeleeAttackAnimationTime( MeleeAttackType attackType ) const;
 	int GetMeleeDamageType( MeleeAttackType attackType ) const;
 
-	virtual void DoWeaponSoundFromAttack( MeleeAttackType attackType, bool bHitWorld ) {}
-	virtual void DoWeaponSoundFromMiss( MeleeAttackType attackType ) {}
-	virtual float GetAttackAnimationTime( int iAnim ) { return GetAnimationTime( 24, 30 ); }
+	virtual void DoWeaponSoundFromAttack( MeleeAttackType attackType, bool bHitWorld ) = 0;
+	virtual void DoWeaponSoundFromMiss( MeleeAttackType attackType ) = 0;
+	virtual float GetAttackAnimationTime( int iAnim ) = 0;
+
+	void ResetMeleeState() { n_meleeAttackType = MELEE_ATTACK_NONE; }
 
 protected:
 	MeleeAttackType n_meleeAttackType;
@@ -97,6 +85,29 @@ protected:
 
 private:
 	bool IsEntityAlreadyHit( edict_t *pEntity, const std::vector<edict_t *> &hitEntities );
+};
+
+class CWeaponBaseMelee : public CWeaponBase, public IMeleeBaseShared
+{
+	DECLARE_CLASS_SIMPLE( CWeaponBaseMelee, CWeaponBase );
+	typedef IMeleeBaseShared MeleeBase;
+
+public:
+	bool IsMeleeWeapon() override { return true; }
+	virtual bool CanUseHeavyAttack() const { return false; }
+	void Spawn( void );
+	virtual void Precache( void ) {}
+	int AddToPlayer( CBasePlayer *pPlayer );
+
+	void PrimaryAttack( void );
+	void SecondaryAttack( void );
+	void WeaponIdle();
+
+	// Default deploy and holster animations, make sure you override these.
+	virtual float Deploy( void );
+	virtual float DoHolsterAnimation();
+	virtual float DoWeaponIdleAnimation( int iAnim );
+	virtual float GetAttackAnimationTime( int iAnim ) { return GetAnimationTime( 24, 30 ); }
 };
 
 #endif

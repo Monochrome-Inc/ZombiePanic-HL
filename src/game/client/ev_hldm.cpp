@@ -885,6 +885,8 @@ void EV_FireSKS(event_args_t *args)
 	VectorCopy(args->angles, angles);
 	VectorCopy(args->velocity, velocity);
 
+	int clipsize = args->iparam1;
+
 	AngleVectors(angles, forward, right, up);
 
 	shell = gEngfuncs.pEventAPI->EV_FindModelIndex("models/shell_rifle.mdl"); // brass shell
@@ -893,7 +895,10 @@ void EV_FireSKS(event_args_t *args)
 	{
 		// Add muzzle flash to current weapon model
 		EV_MuzzleFlash();
-		gEngfuncs.pEventAPI->EV_WeaponAnimation(ANIM_AR556_FIRE1 + gEngfuncs.pfnRandomLong(0, 2), 2);
+		if ( clipsize > 0 )
+			gEngfuncs.pEventAPI->EV_WeaponAnimation(ANIM_SKS_SHOOT01 + gEngfuncs.pfnRandomLong(0, 2), 2);
+		else
+			gEngfuncs.pEventAPI->EV_WeaponAnimation(ANIM_SKS_SHOOT_EMPTY, 2);
 
 		V_PunchAxis(0, gEngfuncs.pfnRandomFloat(-2, 2));
 	}
