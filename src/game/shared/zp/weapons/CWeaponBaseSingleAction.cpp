@@ -155,6 +155,14 @@ bool CWeaponBaseSingleAction::CanPrimaryAttack()
 {
 	if ( PumpIsRequired() ) return false;
 	if ( m_flNextPrimaryAttack > UTIL_WeaponTimeBase() ) return false;
+	if ( m_fInSpecialReload > 0 )
+	{
+		// Stop reloading.
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase();
+		ReloadEnd();
+		m_flNextPrimaryAttack = m_flNextReload + 0.15;
+		return false;
+	}
 
 	// don't fire underwater
 	if ( m_pPlayer->pev->waterlevel == 3 )

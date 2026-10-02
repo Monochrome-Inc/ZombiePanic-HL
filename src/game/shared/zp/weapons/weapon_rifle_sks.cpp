@@ -15,8 +15,9 @@ float CWeaponRifleSKS::DoHolsterAnimation()
 float CWeaponRifleSKS::DoWeaponUnload()
 {
 	SendWeaponAnim( ANIM_SKS_UNLOAD );
-	AddWeaponSound( "weapons/556ar/magout_unload.wav", 1, ATTN_NORM, GetAnimationTime( 15, 20 ) );
-	AddWeaponSound( "weapons/556ar/magin_unload.wav", 1, ATTN_NORM, GetAnimationTime( 28, 20 ) );
+	AddWeaponSound( "weapons/sks/unload.wav", 1, ATTN_NORM, GetAnimationTime( 42, 30 ) );
+	AddWeaponSound( "weapons/sks/close_mag.wav", 1, ATTN_NORM, GetAnimationTime( 65, 30 ) );
+	AddWeaponSound( "weapons/sks/slideback.wav", 1, ATTN_NORM, GetAnimationTime( 108, 30 ) );
 	return GetAnimationTime( 153, 30 );
 }
 
@@ -39,11 +40,14 @@ void CWeaponRifleSKS::Precache(void)
 	PRECACHE_SOUND("items/ammo_pickup.wav");
 
 	PRECACHE_SOUND("weapons/sks/fire.wav");
-	PRECACHE_SOUND("weapons/556ar/magout.wav");
-	PRECACHE_SOUND("weapons/556ar/magin.wav");
-	PRECACHE_SOUND("weapons/556ar/magout_unload.wav");
-	PRECACHE_SOUND("weapons/556ar/magin_unload.wav");
-	PRECACHE_SOUND("weapons/556ar/charge.wav");
+	PRECACHE_SOUND("weapons/sks/close_mag.wav");
+	PRECACHE_SOUND("weapons/sks/insert_mag.wav");
+	PRECACHE_SOUND("weapons/sks/insert_bullet.wav");
+	PRECACHE_SOUND("weapons/sks/melee_miss.wav");
+	PRECACHE_SOUND("weapons/sks/slideback.wav");
+	PRECACHE_SOUND("weapons/sks/slideforward.wav");
+	PRECACHE_SOUND("weapons/sks/slideforward_empty_reload.wav");
+	PRECACHE_SOUND("weapons/sks/unload.wav");
 
 	m_nEventPrimary = PRECACHE_EVENT(1, "events/sks.sc");
 }
@@ -123,23 +127,17 @@ void CWeaponRifleSKS::OnRequestedAnimation( SingleActionAnimReq act )
 		case CWeaponBaseSingleAction::ANIM_RELOAD_START:
 		{
 			SendWeaponAnim( ANIM_SKS_RELOAD_START );
+			AddWeaponSound( "weapons/sks/slideback.wav", 1, ATTN_NORM, GetAnimationTime( 18, 30 ) );
 			m_pPlayer->SetAnimation( PLAYER_RELOAD_START );
 			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + GetAnimationTime( 48, 30 );
 		}
 		break;
 		case CWeaponBaseSingleAction::ANIM_RELOAD:
 		{
-		    if (RANDOM_LONG(0, 1))
-			    EmitWeaponSound( "weapons/shotgun/reload1.wav", CHAN_ITEM, 1, ATTN_NORM, 0, 85 + RANDOM_LONG(0, 0x1f) );
-		    else
-			    EmitWeaponSound( "weapons/shotgun/reload2.wav", CHAN_ITEM, 1, ATTN_NORM, 0, 85 + RANDOM_LONG(0, 0x1f) );
+			EmitWeaponSound( "weapons/sks/insert_bullet.wav", CHAN_ITEM, 1, ATTN_NORM, 0, 85 + RANDOM_LONG(0, 0x1f) );
 
-		    SendWeaponAnim( ANIM_SKS_RELOAD_LOOP );
+			SendWeaponAnim( ANIM_SKS_RELOAD_LOOP );
 			m_pPlayer->SetAnimation( PLAYER_RELOAD );
-
-#if defined( SERVER_DLL )
-			m_pPlayer->m_iWeaponKillCount = 0;
-#endif
 
 			float flAnimTime = GetAnimationTime( 19, 30 );
 		    m_flNextReload = UTIL_WeaponTimeBase() + flAnimTime;
@@ -150,7 +148,7 @@ void CWeaponRifleSKS::OnRequestedAnimation( SingleActionAnimReq act )
 		{
 			SendWeaponAnim( ANIM_SKS_RELOAD_END );
 			m_pPlayer->SetAnimation( PLAYER_RELOAD_END );
-			EmitWeaponSound( "weapons/shotgun/pump.wav", CHAN_ITEM, 1, ATTN_NORM, 0, 105 );
+			AddWeaponSound( "weapons/sks/slideforward.wav", 1, ATTN_NORM, GetAnimationTime( 7, 30 ) );
 			float flAnimTime = GetAnimationTime( 34, 30 );
 		    m_flNextReload = UTIL_WeaponTimeBase() + flAnimTime;
 		    m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + flAnimTime;
@@ -176,9 +174,9 @@ void CWeaponRifleSKS::Reload( void )
 	if ( DefaultReload( ANIM_SKS_RELOAD_EMPTY, fDelay ) )
 	{
 		ResetMeleeState();
-		AddWeaponSound( "weapons/556ar/magout.wav", 1, ATTN_NORM, 0.13f );
-		AddWeaponSound( "weapons/556ar/magin.wav", 1, ATTN_NORM, 1.2f );
-		AddWeaponSound( "weapons/556ar/charge.wav", 1, ATTN_NORM, 2.03f );
+		AddWeaponSound( "weapons/sks/insert_mag.wav", 1, ATTN_NORM, GetAnimationTime( 63, 30 ) );
+		AddWeaponSound( "weapons/sks/insert_mag.wav", 1, ATTN_NORM, GetAnimationTime( 70, 30 ) );
+		AddWeaponSound( "weapons/sks/slideforward_empty_reload.wav", 1, ATTN_NORM, GetAnimationTime( 94, 30 ) );
 	}
 }
 
@@ -240,13 +238,7 @@ void CWeaponRifleSKS::DoWeaponSoundFromAttack( MeleeAttackType attackType, bool 
 
 void CWeaponRifleSKS::DoWeaponSoundFromMiss( MeleeAttackType attackType )
 {
-	const char *szSoundFile = nullptr;
-	switch ( RANDOM_LONG( 0, 1 ) )
-	{
-		case 0: szSoundFile = "weapons/melee/fireaxe/miss1.wav"; break;
-		case 1: szSoundFile = "weapons/melee/fireaxe/miss2.wav"; break;
-	}
-	EmitWeaponSound( szSoundFile, CHAN_ITEM, 1, ATTN_NORM );
+	EmitWeaponSound( "weapons/sks/melee_miss.wav", CHAN_ITEM, 1, ATTN_NORM );
 }
 
 float CWeaponRifleSKS::GetAttackAnimationTime( int iAnim )
