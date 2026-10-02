@@ -56,7 +56,7 @@ void VectorAngles(const float *forward, float *angles);
 static ConVar cl_shellejects_dbarrel1( "cl_shellejects_dbarrel1", "-20 -12 -4" );
 static ConVar cl_shellejects_dbarrel2( "cl_shellejects_dbarrel2", "-20 -12 4" );
 static ConVar cl_shellejects_m16( "cl_shellejects_m16", "13 -12 10" );
-static ConVar cl_shellejects_sks( "cl_shellejects_sks", "13 -12 10" );
+static ConVar cl_shellejects_sks( "cl_shellejects_sks", "20 -6 8" );
 static ConVar cl_shellejects_sig( "cl_shellejects_sig", "20 -12 4" );
 static ConVar cl_shellejects_ppk( "cl_shellejects_ppk", "20 -12 4" );
 static ConVar cl_shellejects_cz75("cl_shellejects_cz75", "20 -12 4");
