@@ -395,7 +395,8 @@ set( GAME_COMMON_SRCS
 
 set( GAME_COMMON_DEFINES
 	${COMMON_DEFINES}
-	CLIENT_WEAPONS
+# Breaks a lot of shit, as we don't use the default old HL setup for weapons.
+#	CLIENT_WEAPONS
 )
 
 set( GAME_COMMON_INCLUDE_PATHS

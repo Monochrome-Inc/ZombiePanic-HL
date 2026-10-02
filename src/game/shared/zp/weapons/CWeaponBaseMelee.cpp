@@ -237,16 +237,16 @@ bool IMeleeBaseShared::DidMeleeAttackHit( CWeaponBase *pWeapon, MeleeAttackType 
 	if ( eWhatDidWeHit1 > HIT_NOTHING )
 	{
 		bHitWorld = ( eWhatDidWeHit1 == HIT_WORLD );
-		#ifndef CLIENT_DLL
+#ifndef CLIENT_DLL
 		DoWeaponSoundFromAttack( attackType, bHitWorld );
 		pWeapon->m_pPlayer->m_iWeaponVolume = bHitWorld ? MELEE_SND_WALLHIT_VOLUME : MELEE_SND_BODYHIT_VOLUME;
-		#endif
+#endif
 		bHitSomething = true;
 	}
 	else
-	#ifndef CLIENT_DLL
+#ifndef CLIENT_DLL
 		DoWeaponSoundFromMiss( attackType );
-	#endif
+#endif
 
 	// Clear it after our attack
 	m_hitEntities.clear();
@@ -299,9 +299,9 @@ IMeleeBaseShared::WhatDidWeHit IMeleeBaseShared::DoAttackTrace( CWeaponBase *pWe
 	int bitsDamageType = GetMeleeDamageType( attackType );
 
 	// Clear multi damage
-	#ifndef CLIENT_DLL
+#ifndef CLIENT_DLL
 	ClearMultiDamage();
-	#endif
+#endif
 
 	// Calculate the distance to move per trace.
 	float flMeleeTraceDist = vStart.DistTo( vEnd ) / max( nMeleeTraceCount, 1 );
@@ -353,24 +353,24 @@ IMeleeBaseShared::WhatDidWeHit IMeleeBaseShared::DoAttackTrace( CWeaponBase *pWe
 #endif
 					eWhatDidWeHit = HIT_WORLD;
 				}
-				#ifndef CLIENT_DLL
+#ifndef CLIENT_DLL
 				pHitEntity->TraceAttack( pWeapon->m_pPlayer->pev, flMeleeDaamge, vTraceTargetDir, &m_trHit, bitsDamageType );
-				#endif
+#endif
 			}
 			else
 				eWhatDidWeHit = HIT_WORLD;
 
-			#ifndef CLIENT_DLL
+#ifndef CLIENT_DLL
 			DecalGunshot( &m_trHit, vForward, GetBulletType() );
-			#endif
+#endif
 			m_hitEntities.push_back( m_trHit.pHit );
 		}
 	}
 
 	// Apply all the damage we traced this frame
-	#ifndef CLIENT_DLL
+#ifndef CLIENT_DLL
 	ApplyMultiDamage( pWeapon->m_pPlayer->pev, pWeapon->m_pPlayer->pev );
-	#endif
+#endif
 
 	return eWhatDidWeHit;
 }
