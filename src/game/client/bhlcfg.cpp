@@ -8,8 +8,9 @@
 #include "hud.h"
 #include "cl_util.h"
 
-#define BHL_CONFIG_NAME       "config_zp.cfg"
-#define BHL_CONFIG_USER_BEGIN "// [USER CONFIG BEGIN - DO NOT EDIT THIS LINE]"
+#define ZP_CONFIG_RATE			"config_rate.cfg"
+#define BHL_CONFIG_NAME			"config_zp.cfg"
+#define BHL_CONFIG_USER_BEGIN	"// [USER CONFIG BEGIN - DO NOT EDIT THIS LINE]"
 
 namespace bhlcfg
 {
@@ -19,6 +20,7 @@ static void SaveConfig(const char *cfgname);
 void bhlcfg::Init()
 {
 	gEngfuncs.pfnClientCmd("exec " BHL_CONFIG_NAME);
+	gEngfuncs.pfnClientCmd("exec " ZP_CONFIG_RATE);
 }
 
 void bhlcfg::Shutdown()
