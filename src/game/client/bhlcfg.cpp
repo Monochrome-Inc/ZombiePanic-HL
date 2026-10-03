@@ -20,7 +20,8 @@ static void SaveConfig(const char *cfgname);
 void bhlcfg::Init()
 {
 	gEngfuncs.pfnClientCmd("exec " BHL_CONFIG_NAME);
-	gEngfuncs.pfnClientCmd("exec " ZP_CONFIG_RATE);
+	// Make sure this get's executed *after* config.cfg, else it does jack shit.
+	gEngfuncs.pfnClientCmd("wait;wait;wait;wait;wait;wait;wait;wait;wait;exec " ZP_CONFIG_RATE);
 }
 
 void bhlcfg::Shutdown()
