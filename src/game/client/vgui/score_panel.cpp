@@ -693,7 +693,7 @@ void CScorePanel::UpdateClientInfo(int client)
 	{
 		// Create player's row
 		pd.nItemID = m_pPlayerList->AddItem( pd.nTeamID, playerKv );
-		if ( ( GetLocalPlayer()->GetTeamNumber() == ZP::TEAM_SURVIVIOR && !GetLocalPlayer()->IsSpectator() ) && pd.nTeamID == ZP::TEAM_ZOMBIE )
+		if ( ( GetLocalPlayer()->GetTeamNumber() == ZP::TEAM_SURVIVIOR && !GetLocalPlayer()->IsSpectator() ) )
 			m_pPlayerList->SetItemFgColor( pd.nItemID, g_pViewport->GetTeamColor( ZP::TEAM_SURVIVIOR ) );
 		else
 			m_pPlayerList->SetItemFgColor( pd.nItemID, gHUD.GetClientColor( client, NoTeamColor::White ) );

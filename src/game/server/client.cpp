@@ -58,6 +58,7 @@ extern int gmsgVGUIMenu;
 unsigned short m_usResetDecals;
 
 void LinkUserMessages(void);
+void DumpPrecacheData(entvars_t *pev, bool bFileDump);
 
 char g_checkedPlayerModels[MAX_PLAYERS][MAX_TEAM_NAME]; // Used to store checked player model name
 
@@ -595,6 +596,13 @@ void ClientCommand(edict_t *pEntity)
 			else
 				pPlayer->Observer_FindNextPlayer(atoi(CMD_ARGV(1)) != 0, false);
 		}
+	}
+	else if (FStrEq(pcmd, "dump_precache_data"))
+	{
+		bool bFileDump = false;
+		if (CMD_ARGC() > 1)
+			bFileDump = atoi(CMD_ARGV(1)) >= 1 ? true : false;
+		DumpPrecacheData(pev, bFileDump);
 	}
 	else if (g_pGameRules->ClientCommand(pPlayer, pcmd))
 	{
@@ -2199,4 +2207,60 @@ void SET_MODEL( edict_t *pEntity, const char *szModel )
 	// It's not precached, just use "models/error.mdl" to avoid crashing and print a warning
 	g_engfuncs.pfnSetModel( pEntity, "models/error.mdl" );
 	Msg( "WARNING: Tried to set model \"%s\" without precaching it first! Using \"models/error.mdl\" instead.\n", szModel );
+}
+
+void DumpPrecacheData(entvars_t *pev, bool bFileDump)
+{
+	int nAmount = 0;
+	for ( const auto &item : precache_check_list )
+		nAmount++;
+
+	if ( bFileDump )
+	{
+		bool bIsHost = false;
+		// Did the host call this?
+		if ( !pev ) bIsHost = true;
+		else
+		{
+			CBasePlayer *pPlayer = (CBasePlayer *)CBasePlayer::Instance( pev );
+			if ( pPlayer || pPlayer->IsConnected() )
+				bIsHost = pPlayer->entindex() == 1 ? true : false;
+		}
+		if ( !bIsHost )
+		{
+			ClientPrint(pev, HUD_PRINTCONSOLE, UTIL_VarArgs("Only the host can use this command.\n"));
+			return;
+		}
+
+		FILE *pFile = fopen("precache_dump.log", "wb");
+		if (!pFile)
+		{
+			Msg("Couldn't create/save precache dump 'precache_dump.log'.\n");
+			return;
+		}
+
+		fprintf(pFile, "== FILE PRECACHE DUMP ==\n");
+		fprintf(pFile, "\n");
+		fprintf(pFile, " ---- Models [%i/%i] ---- \n", nAmount, precache_check_max);
+
+		for ( const auto &item : precache_check_list )
+			fprintf(pFile, " %s\n", item.name);
+
+		fprintf(pFile, "\n");
+
+		fclose(pFile);
+
+		Msg("Saved precache dump 'precache_dump.log'.\n");
+		return;
+	}
+
+	if (pev)
+	{
+		ClientPrint(pev, HUD_PRINTCONSOLE, UTIL_VarArgs("Precached Models: %i\n", nAmount));
+		ClientPrint(pev, HUD_PRINTCONSOLE, UTIL_VarArgs("Precache Limit %i/%i\n", precache_check_list.size(), precache_check_max));
+		return;
+	}
+
+	Msg("Precached Models: %i\n", nAmount);
+	Msg("Precache Limit %i/%i\n\n", precache_check_list.size(), precache_check_max);
 }

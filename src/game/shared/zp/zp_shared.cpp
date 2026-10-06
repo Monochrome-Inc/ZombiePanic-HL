@@ -308,6 +308,7 @@ static WeaponInfo sWeaponInfoList[] = {
 	{ "fireaxe", WEAPON_FIREAXE, false, true },
 	{ "swipe", WEAPON_SWIPE, true, false },
 	{ "sig", WEAPON_SIG, false, false },
+	{ "1911", WEAPON_1911, false, false },
 	{ "ppk", WEAPON_PPK, false, false },
 	{ "cz75", WEAPON_CZ75, false, false },
 	{ "357", WEAPON_PYTHON, false, false },

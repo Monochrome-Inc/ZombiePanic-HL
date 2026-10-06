@@ -20,6 +20,7 @@ extern "C"
 {
 	// HLDM
 	void EV_FireFAFO(struct event_args_s *args);
+	void EV_Fire1911(struct event_args_s *args);
 	void EV_FireSig(struct event_args_s *args);
 	void EV_FirePPK(struct event_args_s *args);
 	void EV_FireCZ75(struct event_args_s *args);
@@ -67,6 +68,7 @@ That was what we were going to do, but we ran out of time...oh well.
 void Game_HookEvents(void)
 {
 	gEngfuncs.pfnHookEvent("events/fafo.sc", EV_FireFAFO);
+	gEngfuncs.pfnHookEvent("events/1911.sc", EV_Fire1911);
 	gEngfuncs.pfnHookEvent("events/sig.sc", EV_FireSig);
 	gEngfuncs.pfnHookEvent("events/ppk.sc", EV_FirePPK);
 	gEngfuncs.pfnHookEvent("events/cz75.sc", EV_FireCZ75);

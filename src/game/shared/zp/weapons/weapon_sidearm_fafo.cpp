@@ -20,15 +20,15 @@ float CWeaponSideArmFafo::DoHolsterAnimation()
 void CWeaponSideArmFafo::Spawn()
 {
 	Precache();
-	SET_MODEL(ENT(pev), "models/w_9mmhandgun.mdl");
+	SET_MODEL(ENT(pev), "models/w_1911.mdl");
 	DefaultSpawn();
 }
 
 void CWeaponSideArmFafo::Precache(void)
 {
-	PRECACHE_MODEL("models/v_9mmhandgun.mdl");
-	PRECACHE_MODEL("models/w_9mmhandgun.mdl");
-	PRECACHE_MODEL("models/p_9mmhandgun.mdl");
+	PRECACHE_MODEL("models/v_1911.mdl");
+	PRECACHE_MODEL("models/w_1911.mdl");
+	PRECACHE_MODEL("models/p_1911.mdl");
 
 	PRECACHE_MODEL("models/shell.mdl"); // brass shell
 
@@ -57,7 +57,7 @@ int CWeaponSideArmFafo::AddToPlayer(CBasePlayer *pPlayer)
 
 float CWeaponSideArmFafo::Deploy()
 {
-	DoDeploy( "models/v_9mmhandgun.mdl", "models/p_9mmhandgun.mdl", ANIM_PISTOL_DRAW, "onehanded" );
+	DoDeploy( "models/v_1911.mdl", "models/p_1911.mdl", ANIM_PISTOL_DRAW, "onehanded" );
 	return GetAnimationTime( 26, 30 );
 }
 

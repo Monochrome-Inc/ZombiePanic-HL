@@ -30,6 +30,8 @@ add_sources(
 	weapon_sidearm_cz75.h
 	weapon_sidearm_glock17.cpp
 	weapon_sidearm_glock17.h
+	weapon_sidearm_1911.cpp
+	weapon_sidearm_1911.h
 	weapon_sidearm_sig.cpp
 	weapon_sidearm_sig.h
 	weapon_sidearm_fafo.cpp

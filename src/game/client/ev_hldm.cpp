@@ -73,6 +73,7 @@ extern "C"
 	// HLDM
 	void EV_FireFAFO(struct event_args_s *args);
 	void EV_FireSig(struct event_args_s *args);
+	void EV_Fire1911(struct event_args_s *args);
 	void EV_FirePPK(struct event_args_s *args);
 	void EV_FireCZ75(struct event_args_s *args);
 	void EV_FireGlock(struct event_args_s *args);
@@ -490,6 +491,52 @@ void EV_HLDM_FireBullets(int idx, float *forward, float *right, float *up, int c
 //======================
 //	    PISTOLS START
 //======================
+void EV_Fire1911(event_args_t *args)
+{
+	int idx;
+	Vector origin;
+	Vector angles;
+	Vector velocity;
+	int empty;
+
+	Vector ShellVelocity;
+	Vector ShellOrigin;
+	int shell;
+	Vector vecSrc, vecAiming;
+	Vector up, right, forward;
+
+	idx = args->entindex;
+	VectorCopy(args->origin, origin);
+	VectorCopy(args->angles, angles);
+	VectorCopy(args->velocity, velocity);
+
+	empty = args->bparam1;
+	AngleVectors(angles, forward, right, up);
+
+	shell = gEngfuncs.pEventAPI->EV_FindModelIndex("models/shell.mdl"); // brass shell
+
+	if (EV_IsLocal(idx))
+	{
+		EV_MuzzleFlash();
+		gEngfuncs.pEventAPI->EV_WeaponAnimation(empty ? ANIM_SIG_SHOOT_EMPTY : ANIM_SIG_SHOOT1 + gEngfuncs.pfnRandomLong(0, 2), 2);
+
+		V_PunchAxis(0, -2.0);
+	}
+
+	Vector shellOffset;
+	ParseVector( cl_shellejects_sig.GetString(), shellOffset );
+	EV_GetDefaultShellInfo(args, origin, velocity, ShellVelocity, ShellOrigin, forward, right, up, shellOffset.x, shellOffset.y, shellOffset.z);
+	EV_EjectBrass(ShellOrigin, ShellVelocity, angles[YAW], shell, TE_BOUNCE_SHELL);
+
+	gEngfuncs.pEventAPI->EV_PlaySound(idx, origin, CHAN_WEAPON, "weapons/1911/fire.wav", gEngfuncs.pfnRandomFloat(0.92, 1.0), ATTN_NORM, 0, 98 + gEngfuncs.pfnRandomLong(0, 3));
+
+	EV_GetGunPosition(args, vecSrc, origin);
+
+	VectorCopy(forward, vecAiming);
+
+	EV_HLDM_FireBullets(idx, forward, right, up, 1, vecSrc, vecAiming, 8192, BULLET_PLAYER_SIG, 0, NULL, args->fparam1, args->fparam2);
+}
+
 void EV_FireSig(event_args_t *args)
 {
 	int idx;
@@ -517,7 +564,7 @@ void EV_FireSig(event_args_t *args)
 	if (EV_IsLocal(idx))
 	{
 		EV_MuzzleFlash();
-		gEngfuncs.pEventAPI->EV_WeaponAnimation(empty ? ANIM_PISTOL_SHOOT_EMPTY : ANIM_PISTOL_SHOOT, 2);
+		gEngfuncs.pEventAPI->EV_WeaponAnimation(empty ? ANIM_SIG_SHOOT_EMPTY : ANIM_SIG_SHOOT1 + gEngfuncs.pfnRandomLong(0, 2), 2);
 
 		V_PunchAxis(0, -2.0);
 	}
