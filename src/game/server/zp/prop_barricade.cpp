@@ -50,6 +50,8 @@ public:
 	bool CanBuildBarricade();
 	void OnScriptCallBack(KeyValues *pData);
 
+	bool IsUseableBrush() const override { return true; }
+
 protected:
 	void SetSequenceBox();
 	void GetSequenceBox( Vector &vMin, Vector &vMax );

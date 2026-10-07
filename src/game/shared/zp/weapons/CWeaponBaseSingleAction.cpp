@@ -151,6 +151,20 @@ void CWeaponBaseSingleAction::PrimaryAttack( void )
 	m_bRequirePumping = true;
 }
 
+bool CWeaponBaseSingleAction::CanUnloadWeapon()
+{
+	// If we are reloading, stop it first.
+	if ( m_fInSpecialReload > 0 )
+	{
+		// Stop reloading.
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase();
+		ReloadEnd();
+		m_flNextPrimaryAttack = m_flNextReload + 0.15;
+		return false;
+	}
+	return true;
+}
+
 bool CWeaponBaseSingleAction::CanPrimaryAttack()
 {
 	if ( PumpIsRequired() ) return false;

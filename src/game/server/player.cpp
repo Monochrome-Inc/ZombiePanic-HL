@@ -1259,8 +1259,8 @@ void CBasePlayer::SetAnimation(PLAYER_ANIM playerAnim)
 	switch (playerAnim)
 	{
 	case PLAYER_RELOAD:
-		m_IdealActivity = ACT_RELOAD;
 		OnPlayerReload();
+		m_IdealActivity = ACT_RELOAD;
 		break;
 
 	case PLAYER_RELOAD_EMPTY:
@@ -1599,6 +1599,8 @@ void CBasePlayer::OnPlayerReload()
 {
 	// From this point, its survivor only
 	if ( pev->team != ZP::TEAM_SURVIVIOR ) return;
+	// A simple check for CWeaponBaseSingleAction
+	if ( m_Activity == m_IdealActivity ) return;
 
 	// Are there any friendlies nearby? If so, tell them we are reloading!
 	bool bHasFriendsNearby = false;
@@ -1629,7 +1631,7 @@ void CBasePlayer::OnPlayerReload()
 
 	// Make sure we have a proper chance of playing this.
 	if ( IsAlive() && RandomFloat( 0.0f, 1.0f ) < 0.1f )
-		DoVocalize( PlayerVocalizeType::VOCALIZE_COVER, true, true );
+		DoVocalize( PlayerVocalizeType::VOCALIZE_AUTO_RELOAD, true, true );
 }
 
 int CBasePlayer::SetNewActivity(const char *szActivity, bool bUseExt)
@@ -2249,16 +2251,65 @@ float IntervalDistance( float x, float x0, float x1 )
 CBaseEntity *CBasePlayer::FindUseEntity()
 {
 	// Grab our useable items first (weapons etc)
-	CBaseEntity *pEyeEnt = GetUseEntityFromCrosshair( true );
-	if ( pEyeEnt ) return pEyeEnt;
+	CBaseEntity *pFind = GetUseEntityFromCrosshair( PLAYER_SEARCH_RADIUS, true );
+	if ( pFind ) return pFind;
 	// Now we care about func_button etc.
-	pEyeEnt = GetUseEntityFromCrosshair( false );
-	if ( pEyeEnt ) return pEyeEnt;
+	pFind = GetUseEntityFromCrosshair( PLAYER_SEARCH_RADIUS, false );
+	if ( pFind ) return pFind;
+
+	std::vector<int> nEntList;
+	UTIL_MakeVectors(pev->v_angle); // so we know which way we are facing
+
 	// Now we do sphere search
-	return GetUseEntitiesFromSphere( PLAYER_SEARCH_RADIUS );
+	GetUseEntitiesFromSphere( nEntList, EyePosition(), PLAYER_SEARCH_RADIUS, true, true );
+	Vector vStart = EyePosition();
+	float flCurrentBestDist = 9999999.0f;
+	for ( size_t i = 0; i < nEntList.size(); i++ )
+	{
+		CBaseEntity *pEnt = CBaseEntity::Instance( INDEXENT( nEntList[i] ) );
+
+		// Go through the ents, and grab the closest entity.
+		Vector vOBB[2];
+		ExtractBbox( pev->sequence, vOBB[0], vOBB[1] );
+
+		Vector delta = pEnt->Center() - vStart;
+		float centerZ = Center().z;
+		delta.z = IntervalDistance( pEnt->Center().z, centerZ + vOBB[0].z, centerZ + vOBB[1].z );
+		float dist = delta.Length();
+		if ( dist < flCurrentBestDist )
+		{
+			pFind = pEnt;
+			flCurrentBestDist = dist;
+		}
+	}
+
+	if ( pFind ) return pFind;
+
+	GetUseEntitiesFromSphere( nEntList, EyePosition(), PLAYER_SEARCH_RADIUS, false );
+	flCurrentBestDist = 9999999.0f;
+	for ( size_t i = 0; i < nEntList.size(); i++ )
+	{
+		CBaseEntity *pEnt = CBaseEntity::Instance( INDEXENT( nEntList[i] ) );
+
+		// Go through the ents, and grab the closest entity.
+		Vector vOBB[2];
+		ExtractBbox( pev->sequence, vOBB[0], vOBB[1] );
+
+		Vector delta = pEnt->Center() - vStart;
+		float centerZ = Center().z;
+		delta.z = IntervalDistance( pEnt->Center().z, centerZ + vOBB[0].z, centerZ + vOBB[1].z );
+		float dist = delta.Length();
+		if ( dist < flCurrentBestDist )
+		{
+			pFind = pEnt;
+			flCurrentBestDist = dist;
+		}
+	}
+
+	return pFind;
 }
 
-CBaseEntity *CBasePlayer::GetUseEntityFromCrosshair( bool bUseableOnly )
+CBaseEntity *CBasePlayer::GetUseEntityFromCrosshair( const float &flDist, const bool &bUseableOnly )
 {
 	CBaseEntity *pObject = NULL;
 	CBaseEntity *pClosest = NULL;
@@ -2271,6 +2322,10 @@ CBaseEntity *CBasePlayer::GetUseEntityFromCrosshair( bool bUseableOnly )
 	Vector searchCenter = EyePosition();
 
 	float nearestDist = FLT_MAX;
+
+	int nObjCaps = FCAP_IMPULSE_USE | FCAP_CONTINUOUS_USE | FCAP_ONOFF_USE;
+	if ( bUseableOnly )
+		nObjCaps = FCAP_IMPULSE_USE | FCAP_ONOFF_USE;
 
 	const int NUM_TANGENTS = 8;
 	// trace a box at successive angles down
@@ -2288,57 +2343,60 @@ CBaseEntity *CBasePlayer::GetUseEntityFromCrosshair( bool bUseableOnly )
 			VectorNormalize(down);
 			UTIL_TraceHull( searchCenter, searchCenter + down * 72, ignore_monsters, head_hull, ENT(pev), &tr );
 		}
-		pObject = CBaseEntity::Instance( tr.pHit );
-		if ( !pObject ) continue;
+		if ( !tr.pHit ) continue;
 
-		bool bCanUse = bUseableOnly ? pObject->IsUseableItem() : pObject->IsUseableBrush();
-		if ( bCanUse )
+		std::vector<int> nEntList;
+		GetUseEntitiesFromSphere( nEntList, tr.vecEndPos, 30, bUseableOnly );
+
+		// Get the closest object.
+		float flCurrentBestDist = 9999999.0f;
+		for ( size_t i = 0; i < nEntList.size(); i++ )
 		{
-			// GoldSrc does not have CollisionProp(), so we cannot use that.
-			// Instead, we use our Quake BBox.
+			pObject = CBaseEntity::Instance( INDEXENT( nEntList[i] ) );
+
+			// Go through the ents, and grab the closest entity.
 			Vector vOBB[2];
 			ExtractBbox( pev->sequence, vOBB[0], vOBB[1] );
 
-			Vector delta = tr.vecEndPos - searchCenter;
+			Vector delta = pObject->Center() - searchCenter;
 			float centerZ = Center().z;
-			delta.z = IntervalDistance( tr.vecEndPos.z, centerZ + vOBB[0].z, centerZ + vOBB[1].z );
+			delta.z = IntervalDistance( pObject->Center().z, centerZ + vOBB[0].z, centerZ + vOBB[1].z );
 			float dist = delta.Length();
-			if ( dist < PLAYER_SEARCH_RADIUS )
+			if ( dist < flCurrentBestDist )
 			{
 				pClosest = pObject;
-				
-				// if this is directly under the cursor just return it now
-				if ( i == 0 )
-					return pObject;
+				flCurrentBestDist = dist;
 			}
 		}
+		if ( !pObject ) continue;
+		// if this is directly under the cursor just return it now
+		if ( i == 0 )
+			return pObject;
 	}
-
 	return pClosest;
 }
 
-CBaseEntity *CBasePlayer::GetUseEntitiesFromSphere( float flDist )
+void CBasePlayer::GetUseEntitiesFromSphere( std::vector<int> &nEnts, const Vector &vStart, const float &flDist, const bool &bUseableOnly, const bool &bDoExtraHelp )
 {
-	UTIL_MakeVectors(pev->v_angle); // so we know which way we are facing
-
+	nEnts.clear();
 	float flMaxDot = VIEW_FIELD_NARROW;
 	float flDot;
 	Vector vecLOS;
 
-	Vector searchCenter = EyePosition();
-
 	CBaseEntity *pObject = nullptr;
-	CBaseEntity *pClosest = nullptr;
+
+	int nObjCaps = FCAP_IMPULSE_USE | FCAP_CONTINUOUS_USE | FCAP_ONOFF_USE;
+
 	while ((pObject = UTIL_FindEntityInSphere(pObject, pev->origin, flDist)) != NULL)
 	{
 		// This object has an owner, SKIP.
 		if ( pObject->pev->owner ) continue;
-		if ( pObject->IsUseableItem() || pObject->IsUseableBrush() )
+		if ( bUseableOnly ? pObject->IsUseableItem() : ( pObject->ObjectCaps() & (nObjCaps) ) )
 		{
 			// Since this has purely been a radius search to this point, we now
 			// make sure the object isn't behind glass or a grate.
 			TraceResult trCheckOccluded;
-			UTIL_TraceLine( searchCenter, pObject->Center(), ignore_monsters, ENT(pev), &trCheckOccluded );
+			UTIL_TraceLine( vStart, pObject->Center(), ignore_monsters, ENT(pev), &trCheckOccluded );
 
 			CBaseEntity *pCheckHit = CBaseEntity::Instance( trCheckOccluded.pHit );
 			if ( trCheckOccluded.flFraction == 1.0 || pCheckHit == pObject )
@@ -2356,27 +2414,23 @@ CBaseEntity *CBasePlayer::GetUseEntitiesFromSphere( float flDist )
 				if ( flDot > flMaxDot )
 				{
 					// only if the item is in front of the user
-					pClosest = pObject;
+					nEnts.push_back( pObject->entindex() );
 					flMaxDot = flDot;
 				}
 				else
 				{
-					// If this is an useable item, then it has higher priority.
-					if ( pClosest && !pClosest->IsUseableItem() && pObject->IsUseableItem() )
-						pClosest = pObject;
-					else if ( pObject->IsUseableItem() )
+					if ( !bDoExtraHelp ) continue;
+					if ( pObject->IsUseableItem() )
 					{
 						Vector vToWeapon = pObject->pev->origin - pev->origin;
 						float flDistSqr = vToWeapon.LengthSqr();
 						if ( flDistSqr <= ( 78.0f * 78.0f ) ) // 78 units max
-							pClosest = pObject;
+							nEnts.push_back( pObject->entindex() );
 					}
 				}
 			}
 		}
 	}
-	pObject = pClosest;
-	return pObject;
 }
 
 void CBasePlayer::PlayerUse(void)
@@ -2440,6 +2494,10 @@ void CBasePlayer::PlayerUse(void)
 	{
 		//!!!UNDONE: traceline here to prevent USEing buttons through walls
 		int caps = pObject->ObjectCaps();
+
+		// Some may not have this, so add this.
+		if ( pObject->IsUseableBrush() || pObject->IsUseableItem() )
+			caps |= FCAP_IMPULSE_USE;
 
 		if ( ( m_afButtonPressed & IN_USE ) && ( pev->team == ZP::TEAM_SURVIVIOR ) )
 			EMIT_SOUND(ENT(pev), CHAN_ITEM, "common/wpn_select.wav", 0.4, ATTN_NORM);
@@ -7903,6 +7961,7 @@ void PrecachePlayerVocalizeSounds()
 				else if ( !Q_stricmp( sub->GetName(), "pain_drown" ) ) data.Type = VOCALIZE_AUTO_PAIN_DROWN;
 				else if ( !Q_stricmp( sub->GetName(), "death" ) ) data.Type = VOCALIZE_AUTO_DEATH;
 				else if ( !Q_stricmp( sub->GetName(), "death_fall" ) ) data.Type = VOCALIZE_AUTO_DEATH_FALL;
+				else if ( !Q_stricmp( sub->GetName(), "reload" ) ) data.Type = VOCALIZE_AUTO_RELOAD;
 
 				m_VocalizeData.push_back( data );
 			}

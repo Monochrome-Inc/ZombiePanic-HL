@@ -25,6 +25,8 @@ public:
 
 	float MaxSpeed() const { return m_maxSpeed; }
 
+	bool IsUseableBrush() const override { return true; }
+
 protected:
 	void SetSequenceBox();
 	int ExtractBbox(int sequence, float *mins, float *maxs);

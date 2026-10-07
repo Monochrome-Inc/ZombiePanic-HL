@@ -66,6 +66,7 @@ public:
 	virtual void Unload();
 	virtual int UnloadAmount() { return m_iClip; }
 	virtual float DoWeaponUnload() { return 0.1f; }
+	virtual bool CanUnloadWeapon() { return true; }
 	void FinishUnloading();
 
 	// Get the duration of an animation in seconds

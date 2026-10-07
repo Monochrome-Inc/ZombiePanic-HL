@@ -19,6 +19,7 @@ public:
 	virtual void Reload( void );
 	void PrimaryAttack( void ) override;
 	virtual bool CanPrimaryAttack();
+	bool CanUnloadWeapon() override;
 	virtual void OnWeaponPrimaryAttack() {}
 
 	// TODO: Replace this once we can figure out how to use the ACT_ crap

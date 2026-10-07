@@ -117,6 +117,8 @@ public:
 	// breakables use an overridden takedamage
 	virtual int TakeDamage(entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType);
 
+	bool IsUseableBrush() const override { return true; }
+
 	static TYPEDESCRIPTION m_SaveData[];
 
 	static char *m_soundNames[3];

@@ -482,8 +482,8 @@ private:
 	void DoHeadshotChunk( const Vector &vecPos, short modelIndex, int iAmount, int iScale );
 public:
 	CBaseEntity *FindUseEntity(); // Backported from Source SDK 2013
-	CBaseEntity *GetUseEntityFromCrosshair( bool bUseableOnly );
-	CBaseEntity *GetUseEntitiesFromSphere( float flDist );
+	CBaseEntity *GetUseEntityFromCrosshair( const float &flDist, const bool &bUseableOnly );
+	void GetUseEntitiesFromSphere( std::vector<int> &nEntList, const Vector &vStart, const float &flDist, const bool &bUseableOnly, const bool &bDoExtraHelp = false );
 
 	virtual bool IsBot( void ) { return false; }
 

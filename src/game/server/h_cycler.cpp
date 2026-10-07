@@ -39,7 +39,7 @@ class CCycler : public CBaseMonster
 {
 public:
 	void GenericCyclerSpawn(char *szModel, Vector vecMin, Vector vecMax);
-	virtual int ObjectCaps(void) { return (CBaseEntity ::ObjectCaps() | FCAP_IMPULSE_USE); }
+	virtual int ObjectCaps(void) { return CBaseEntity::ObjectCaps(); }
 	int TakeDamage(entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType);
 	void Spawn(void);
 	void Restart(void);

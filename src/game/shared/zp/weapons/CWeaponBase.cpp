@@ -400,6 +400,8 @@ void CWeaponBase::Unload()
 	if ( IsHolstering() ) return;
 	// Can't unload an empty weapon
 	if ( m_iClip <= 0 ) return;
+	// Can we reload the weapon?
+	if ( !CanUnloadWeapon() ) return;
 	// How much ammo to unload
 	int iUnloadAmount = UnloadAmount();
 	// Can we give ammo to the player?
