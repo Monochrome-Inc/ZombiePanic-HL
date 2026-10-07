@@ -24,6 +24,11 @@ enum IOFunctionCommands_t
 	IO_ADD_TO_SPAWN_LIST,
 	IO_SPAWN_ITEMS,
 	IO_SPAWN_MELEE_ITEMS,
+	IO_RANDOM,
+	IO_RANDOM_INT,
+	IO_SWITCH,
+	IO_CASE,
+	IO_DEFAULT,
 
 	IO_MAX,
 
@@ -75,6 +80,16 @@ struct IOFunctionCommand
 	bool IsElseIf; // Is this an ELSEIF command?
 	bool IsElse; // Is this an ELSE command?
 	ISpawnListData SpawnItem; // The spawn list data, used by IO_ADD_TO_SPAWN_LIST
+
+	// Switch/Case support
+	std::string SwitchValue; // The value to switch on (for IO_SWITCH)
+	std::string CaseValue;   // The case value to match (for IO_CASE)
+	std::string VarName;     // Variable name to store result (for IO_RANDOM)
+	
+	// Switch/Case ID tracking
+	int SwitchID = -1;  // Which switch block this belongs to
+	int CaseID = -1;    // Which case within the switch (0 = first case, -1 = not a case)
+	bool IsDefault = false; // Is this a default case?
 };
 
 struct IOFunctionData
@@ -92,6 +107,14 @@ enum IOFunctionCallIfBlockStatements
 	IFBLOCK_ELSE,
 };
 
+enum IOFunctionCallSwitchBlockStatements
+{
+	SWITCHBLOCK_NONE = 0,
+	SWITCHBLOCK_SWITCH,
+	SWITCHBLOCK_CASE,
+	SWITCHBLOCK_DEFAULT,
+};
+
 struct IOFunctionCall
 {
 	uint ID; // Our ID for this function call
@@ -99,6 +122,16 @@ struct IOFunctionCall
 	std::vector<std::string> Arguments; // Our arguments
 	std::vector<IOFunctionCommand> Commands; // The commands it will execute
 	IOFunctionCallIfBlockStatements InsideIfBlock = IFBLOCK_NONE; // Are we inside an if block?
+	IOFunctionCallSwitchBlockStatements InsideSwitchBlock = SWITCHBLOCK_NONE; // Are we inside a switch block?
+	std::string SwitchValue; // The value we're switching on
+	bool SwitchMatched = false; // Has a case matched?
+	bool InCaseBlock = false; // Are we currently executing inside a matched case?
+	
+	// Switch/Case ID tracking (for multiple/nested switches)
+	int CurrentSwitchID = -1;    // The switch ID we're currently in
+	int CurrentCaseID = -1;      // The case ID we're currently executing (-1 = not in a case)
+	int NextSwitchID = 0;        // Counter for assigning switch IDs during parsing
+	int NextCaseID = 0;          // Counter for assigning case IDs during parsing
 };
 
 class IOScriptFile
@@ -110,6 +143,10 @@ public:
 	ScriptCallBackEnum OnCalled(const std::string &szFunction, KeyValues *pData);
 	void OnThink();
 	void OnRoundRestart();
+
+	// Variable management
+	void SetVariable( const std::string &szName, const std::string &szValue );
+	std::string GetVariable( const std::string &szName ) const;
 
 private:
 	ScriptCallBackEnum OnOutput( CBaseEntity *pEnt, const std::string &szAction, const std::string &szValue, const float &szDelay );
@@ -127,10 +164,16 @@ private:
 	// Runs the commands
 	void RunCommands( int nID );
 
+	// Replace variables in string (e.g., {varName} -> value)
+	std::string ReplaceVariables( const std::string &str ) const;
+
 	std::string m_szFileName;
 	// Our available functions
 	std::vector<IOFunctionData> m_Functions;
 	std::vector<IOFunctionCall> m_Commands;
+
+	// Variable storage for script execution
+	std::map<std::string, std::string> m_Variables;
 
 	uint GetCurrentID() const;
 };

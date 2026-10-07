@@ -179,6 +179,7 @@ public:
 	virtual void BounceSound() { }
 
 	virtual bool IsUseableItem() const { return false; }
+	virtual bool IsUseableBrush() const { return false; } // Used by func_button and func_button_rot
 
 	// Setup the object->object collision box (pev->mins / pev->maxs is the object->world collision box)
 	virtual void SetObjectCollisionBox(void);
@@ -771,6 +772,8 @@ public:
 
 	void ButtonActivate();
 	void SparkSoundCache(void);
+
+	bool IsUseableBrush() const override { return true; }
 
 	void EXPORT ButtonShot(void);
 	void EXPORT ButtonTouch(CBaseEntity *pOther);

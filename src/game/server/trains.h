@@ -105,6 +105,8 @@ public:
 	static TYPEDESCRIPTION m_SaveData[];
 	virtual int ObjectCaps(void) { return (CBaseEntity ::ObjectCaps() & ~FCAP_ACROSS_TRANSITION) | FCAP_DIRECTIONAL_USE; }
 
+	bool IsUseableBrush() const override { return true; }
+
 	virtual void OverrideReset(void);
 
 	CPathTrack *m_ppath;
@@ -134,6 +136,8 @@ public:
 	void Blocked(CBaseEntity *pOther);
 	void Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value);
 	void KeyValue(KeyValueData *pkvd);
+
+	bool IsUseableBrush() const override { return true; }
 
 	void EXPORT Next(void);
 	void EXPORT Find(void);

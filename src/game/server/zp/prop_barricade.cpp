@@ -8,6 +8,9 @@
 #include "func_break.h"
 #include "zp/weapons/CWeaponBase.h"
 #include "zp/weapons/weapon_misc_nailgun.h"
+#ifdef SCRIPT_SYSTEM
+#include "core.h"
+#endif
 
 extern void SetBodygroup( void *pmodel, entvars_t *pev, int iGroup, int iValue );
 extern int gmsgBarricadeBuildProgress;
@@ -45,12 +48,13 @@ public:
 	void StopBuilding();
 	void SetBarricadeMode();
 	bool CanBuildBarricade();
+	void OnScriptCallBack(KeyValues *pData);
 
 protected:
 	void SetSequenceBox();
 	void GetSequenceBox( Vector &vMin, Vector &vMax );
 	int ExtractBbox(int sequence, float *mins, float *maxs);
-	void OnBarricadeBuilt();
+	void OnBarricadeBuilt( bool bPreBuilt );
 	void ResetPlayerInfo( CBasePlayer *pPlayer );
 	bool IsPlayerUsingNailgun( CBasePlayer *pPlayer );
 
@@ -105,6 +109,7 @@ void CPropBarricade::SoftRemove()
 	BaseClass::SoftRemove();
 	pev->effects = 0;
 	SetBodygroup( GET_MODEL_PTR(ENT(pev)), pev, BGROUP_BODY, BGROUP_SUB_DESTROYED );
+	FireEntityOutput( this, "OnBarricadeDestroyed" );
 }
 
 
@@ -140,9 +145,36 @@ void CPropBarricade::Spawn()
 
 	// Pre-Built?
 	if ( pev->spawnflags & SF_BARRICADE_START_BUILT )
-		OnBarricadeBuilt();
+		OnBarricadeBuilt( true );
+
+#ifdef SCRIPT_SYSTEM
+	// Outputs
+	ScriptSystem::RegisterScriptCallback( AvailableScripts_t::InputOutput, this, "OnBarricadePreBuilt" );
+	ScriptSystem::RegisterScriptCallback( AvailableScripts_t::InputOutput, this, "OnBarricadeBuilt" );
+	ScriptSystem::RegisterScriptCallback( AvailableScripts_t::InputOutput, this, "OnBarricadeDestroyed" );
+
+	// Inputs
+	ScriptSystem::RegisterScriptCallback( AvailableScripts_t::InputOutput, this, "PlaceBarricade" );
+	ScriptSystem::RegisterScriptCallback( AvailableScripts_t::InputOutput, this, "SetHealth" );
+	ScriptSystem::RegisterScriptCallback( AvailableScripts_t::InputOutput, this, "Break" );
+
+	SetEntityScriptCallback( &CPropBarricade::OnScriptCallBack );
+#endif
 }
 
+
+void CPropBarricade::OnScriptCallBack( KeyValues *pData )
+{
+	const char *szAction = pData->GetString( "Action" );
+	const char *szValue = pData->GetString( "arg0" );
+	// Check what kind of action we got
+	if ( FStrEq( szAction, "Break" ) )
+		TakeDamage( pev, pev, pev->health + 1, DMG_CLUB );
+	else if ( FStrEq( szAction, "SetHealth" ) )
+		pev->health = atoi( szValue );
+	else if ( FStrEq( szAction, "PlaceBarricade" ) )
+		OnBarricadeBuilt( true );
+}
 
 void CPropBarricade::Restart()
 {
@@ -168,7 +200,7 @@ void CPropBarricade::Restart()
 
 	// Pre-Built?
 	if ( pev->spawnflags & SF_BARRICADE_START_BUILT )
-		OnBarricadeBuilt();
+		OnBarricadeBuilt( true );
 }
 
 
@@ -269,7 +301,7 @@ void CPropBarricade::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYP
 }
 
 
-void CPropBarricade::OnBarricadeBuilt()
+void CPropBarricade::OnBarricadeBuilt( bool bPreBuilt )
 {
 	CBasePlayer *pPlayer = static_cast<CBasePlayer *>( UTIL_PlayerByIndex( m_nBuilder ) );
 	if ( pPlayer )
@@ -295,6 +327,14 @@ void CPropBarricade::OnBarricadeBuilt()
 
 	pev->sequence = 0;
 	SetSequenceBox(); // Copied from CBaseAnimating
+
+	// Pre built? Then no sounds
+	if ( bPreBuilt )
+	{
+		FireEntityOutput( this, "OnBarricadePreBuilt" );
+		return;
+	}
+	FireEntityOutput( this, "OnBarricadeBuilt" );
 
 	// Let's play a simple button sound to indicate building is done.
 	m_eBarricadeSnd = SND_BUILT;
@@ -467,7 +507,7 @@ void CPropBarricade::OnBarricading()
 	// Fully built?
 	if ( m_flBuildStartTime - gpGlobals->time <= 0.0f )
 	{
-		OnBarricadeBuilt();
+		OnBarricadeBuilt( false );
 		return;
 	}
 

@@ -308,6 +308,8 @@ public:
 	int SetNewActivity(const char *szActivity, bool bUseExt);
 	char m_szAnimExtention[32];
 
+	void OnPlayerReload();
+
 	// custom player functions
 	virtual void ImpulseCommands(void);
 	void CheatImpulseCommands(int iImpulse);
@@ -480,6 +482,8 @@ private:
 	void DoHeadshotChunk( const Vector &vecPos, short modelIndex, int iAmount, int iScale );
 public:
 	CBaseEntity *FindUseEntity(); // Backported from Source SDK 2013
+	CBaseEntity *GetUseEntityFromCrosshair( bool bUseableOnly );
+	CBaseEntity *GetUseEntitiesFromSphere( float flDist );
 
 	virtual bool IsBot( void ) { return false; }
 

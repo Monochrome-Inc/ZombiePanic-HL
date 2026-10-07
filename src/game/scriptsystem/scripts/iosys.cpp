@@ -5,6 +5,8 @@
 #include <fstream>
 #include <sstream>
 #include <iomanip>
+#include <map>
+#include <cstdlib>
 #include <tier2/tier2.h>
 #include "FileSystem.h"
 #include <KeyValues.h>
@@ -44,6 +46,11 @@ static const char *g_IOCommands[IO_MAX] = {
 	"AddToSpawnList",
 	"SpawnItems",
 	"SpawnMeleeWeapons",
+	"Random",
+	"RandomInt",
+	"switch",
+	"case",
+	"default",
 };
 
 static std::vector<ISpawnListData> s_SpawnListData; // Used by IO_SPAWN_ITEMS and IO_ADD_TO_SPAWN_LIST
@@ -378,6 +385,10 @@ IOScriptFile::IOScriptFile( const std::string &szFile )
 	bool inElse = false;
 	bool inElseIf = false;
 	std::string inIf;
+	bool inSwitch = false;
+	int currentSwitchID = -1;
+	int functionNextSwitchID = 0;
+	int functionNextCaseID = 0;
 	IORequirementStatements currentRequirement = IORequirementStatements::IF_EQUAL;
 
 	while ( std::getline(file, line) )
@@ -399,7 +410,13 @@ IOScriptFile::IOScriptFile( const std::string &szFile )
 			inIf.clear();
 			inElse = false;
 			inElseIf = false;
+			inSwitch = false;
+			currentSwitchID = -1;
 			currentRequirement = IORequirementStatements::IF_EQUAL;
+
+			// Reset switch/case ID counters for each function
+			functionNextSwitchID = 0;
+			functionNextCaseID = 0;
 
 			// Parse function name and parameters
 			size_t nameStart = strlen("Function ");
@@ -467,6 +484,8 @@ IOScriptFile::IOScriptFile( const std::string &szFile )
 			cmd.SpawnItem.ListName.clear();
 			cmd.SpawnItem.ItemName.clear();
 			cmd.SpawnItem.Limit = 0;
+			cmd.SwitchID = functionNextSwitchID - 1; // Belongs to the most recent switch
+			cmd.CaseID = functionNextCaseID;
 
 			// Identify command type (IOFunctionCommands_t)
 			int commandType = -1;
@@ -515,6 +534,12 @@ IOScriptFile::IOScriptFile( const std::string &szFile )
 				    // Example: Break {param} if "MyValue"
 				    // Message = arg0, Input = arg1
 				    auto args = Split(restOfLine, ' ');
+				    if ( args.size() < 2 )
+					{
+					    cmd.Message.clear();
+					    cmd.Input.clear();
+					    break;
+					}
 				    // Replace {param} with %sN%
 					cmd.Message = ReplaceScriptArgs( MessageCleanup( args[0] ), currentFunction.Parameters );
 				    cmd.Input = ReplaceScriptArgs( MessageCleanup( args[2] ), currentFunction.Parameters );
@@ -585,6 +610,12 @@ IOScriptFile::IOScriptFile( const std::string &szFile )
 				{
 					if ( !inIf.empty() )
 						inIf.clear();
+					// Also handle switch block end
+					if ( inSwitch )
+					{
+						inSwitch = false;
+						currentSwitchID = -1;
+					}
 				    break;
 				}
 			    case IO_EXEC_AS:
@@ -642,8 +673,88 @@ IOScriptFile::IOScriptFile( const std::string &szFile )
 					cmd.Message = ReplaceScriptArgs( restOfLine, currentFunction.Parameters );
 					break;
 				}
+				case IO_RANDOM:
+				{
+					// Example: Random 0.0 1.0 myVar
+					// arg0 = min, arg1 = max, arg2 = variable name to store result
+					auto args = Split(restOfLine, ' ');
+					if (args.size() >= 3)
+					{
+						cmd.Message = MessageCleanup(args[0]); // min
+						cmd.Input = MessageCleanup(args[1]);   // max
+						cmd.VarName = MessageCleanup(args[2]); // variable name
+					}
+					break;
+				}
+				case IO_RANDOM_INT:
+				{
+					// Example: RandomInt 1 5 myVar
+					// arg0 = min (int), arg1 = max (int), arg2 = variable name to store result
+					auto args = Split(restOfLine, ' ');
+					if (args.size() >= 3)
+					{
+						cmd.Message = MessageCleanup(args[0]); // min
+						cmd.Input = MessageCleanup(args[1]);   // max
+						cmd.VarName = MessageCleanup(args[2]); // variable name
+					}
+					break;
+				}
+				case IO_SWITCH:
+				{
+					// Example: switch myVar
+					// arg0 = variable name or value to switch on
+					cmd.SwitchValue = restOfLine;
+				    cmd.SwitchID = functionNextSwitchID;
+					cmd.CaseID = -1;
+					cmd.IsDefault = false;
+					functionNextSwitchID++;
+					functionNextCaseID = 0; // Reset case counter for new switch
+					
+					// Enter switch block
+					inSwitch = true;
+					currentSwitchID = functionNextSwitchID - 1;
+					break;
+				}
+				case IO_CASE:
+				{
+					// Example: case 0.5
+					// arg0 = value to match
+					cmd.CaseValue = restOfLine;
+					cmd.SwitchID = functionNextSwitchID - 1; // Belongs to the most recent switch
+					cmd.CaseID = functionNextCaseID;
+					cmd.IsDefault = false;
+					functionNextCaseID++;
+					break;
+				}
+				case IO_DEFAULT:
+				{
+					// Default case - no value needed
+					cmd.SwitchID = functionNextSwitchID - 1; // Belongs to the most recent switch
+					cmd.CaseID = functionNextCaseID;
+					cmd.IsDefault = true;
+					functionNextCaseID++;
+					break;
+				}
 				default:
 					break;
+			}
+
+			// For commands inside a switch block, assign the current switch ID
+			if (inSwitch && cmd.Type != IO_SWITCH && cmd.Type != IO_CASE && cmd.Type != IO_DEFAULT && cmd.Type != IO_END)
+			{
+				cmd.SwitchID = currentSwitchID;
+			}
+
+			if ( sv_ss_debug.GetBool() )
+			{
+				Msg( "Added Command: %s [%i]\n", g_IOCommands[cmd.Type], cmd.Type );
+				if ( sv_ss_debug.GetInt() == 2 && cmd.SwitchID > -1 )
+				{
+					Msg( "Is in a switch statement.\n" );
+					Msg( "SwitchValue: %s\n", cmd.SwitchValue.c_str() );
+					Msg( "SwitchID: %i\n", cmd.SwitchID );
+					Msg( "CaseID: %i\n", cmd.CaseID );
+				}
 			}
 
 			currentFunction.Commands.push_back(cmd);
@@ -776,6 +887,49 @@ void IOScriptFile::RunCommands( int nID )
 	{
 		IOFunctionCommand cmd = pFunctionCall.Commands[ 0 ];
 
+		// Apply variable replacement to command strings (both function args and runtime variables)
+		auto ApplyVariables = [&](std::string str) -> std::string {
+			str = GetArgValues(str, pFunctionCall.Arguments);
+			str = ReplaceVariables(str);
+			return str;
+		};
+
+		// Handle switch block: if we're in a switch block but haven't matched a case yet,
+		// skip all commands except CASE, DEFAULT, and END (for the correct switch)
+		if ( pFunctionCall.InsideSwitchBlock != SWITCHBLOCK_NONE && 
+		     !pFunctionCall.SwitchMatched &&
+		     cmd.Type != IO_CASE && 
+		     cmd.Type != IO_DEFAULT && 
+		     cmd.Type != IO_END )
+		{
+			// Skip if the command do not belong to the correct SwitchID
+			if (cmd.SwitchID == -1 || cmd.SwitchID != pFunctionCall.CurrentSwitchID)
+			{
+				pFunctionCall.Commands.erase( pFunctionCall.Commands.begin() );
+				return;
+			}
+
+			// Now we do the same for the CaseID
+			if (cmd.CaseID == -1 || cmd.CaseID != atoi( pFunctionCall.SwitchValue.c_str() ))
+			{
+				pFunctionCall.Commands.erase( pFunctionCall.Commands.begin() );
+				return;
+			}
+		}
+
+		// Also skip commands that belong to a different case within the same switch
+		if ( pFunctionCall.InsideSwitchBlock != SWITCHBLOCK_NONE && 
+			pFunctionCall.SwitchMatched &&
+			pFunctionCall.InCaseBlock &&
+		    ( cmd.SwitchID == -1 || cmd.SwitchID != pFunctionCall.CurrentSwitchID ) &&
+			( cmd.CaseID == -1 || cmd.CaseID != atoi( pFunctionCall.SwitchValue.c_str() ) )
+			)
+		{
+			// This command belongs to a different case, skip it
+			pFunctionCall.Commands.erase( pFunctionCall.Commands.begin() );
+			return;
+		}
+
 		// Not empty? check what we require
 		if ( !cmd.Require.empty() )
 		{
@@ -873,9 +1027,23 @@ void IOScriptFile::RunCommands( int nID )
 
 		if ( cmd.Type == IO_BREAK )
 		{
-			std::string szArgument = GetArgValues( cmd.Message, pFunctionCall.Arguments );
-			std::string szInput = GetArgValues( cmd.Input, pFunctionCall.Arguments );
-			if ( szArgument == szInput )
+			// Check if this is a switch break (no condition, just "break")
+			std::string szArgument = ApplyVariables(cmd.Message);
+			std::string szInput = ApplyVariables(cmd.Input);
+			
+			// If we're in a case block and break has no meaningful condition, exit switch
+			if ( pFunctionCall.InCaseBlock && cmd.SwitchID == pFunctionCall.CurrentSwitchID && (szArgument.empty() || szArgument == szInput) )
+			{
+				// Exit the switch block - skip to END
+				pFunctionCall.InsideSwitchBlock = SWITCHBLOCK_SWITCH;
+				pFunctionCall.SwitchValue.clear();
+				pFunctionCall.SwitchMatched = false;
+				pFunctionCall.CurrentSwitchID = -1;
+				pFunctionCall.CurrentCaseID = -1;
+				pFunctionCall.InCaseBlock = false;
+			}
+			// Original conditional break behavior
+			else if ( szArgument == szInput )
 			{
 				pFunctionCall.Commands.clear();
 				return;
@@ -890,8 +1058,8 @@ void IOScriptFile::RunCommands( int nID )
 				// Make sure it's I/O
 				// We don't use the entity index here, since we don't want to call ourselves and make an infinite loop (if it happens)
 			    const std::string &szArg0( "SCall" );
-			    const std::string &szArg1( cmd.EntFire );
-			    const std::string &szArg2( cmd.Message );
+			    const std::string szArg1 = ApplyVariables(cmd.EntFire);
+			    const std::string szArg2 = ApplyVariables(cmd.Message);
 			    ScriptSystem::CallScriptDelay( AvailableScripts_t::InputOutput, nullptr, cmd.Input, cmd.Delay, 3, szArg0, szArg1, szArg2 );
 			}
 			break;
@@ -903,9 +1071,9 @@ void IOScriptFile::RunCommands( int nID )
 			case IO_GIVE_ITEM:
 				// Give item to player(s)
 				{
-					std::string szPlayer = GetArgValues( cmd.EntFire, pFunctionCall.Arguments );
+					std::string szPlayer = ApplyVariables(cmd.EntFire);
 					int nPlayerID = atoi( szPlayer.c_str() );
-					std::string szItem = GetArgValues( cmd.Message, pFunctionCall.Arguments );
+					std::string szItem = ApplyVariables(cmd.Message);
 					int iszItem = ALLOC_STRING( szItem.c_str() ); // Make a copy of the classname
 					if ( nPlayerID == 0 )
 					{
@@ -928,9 +1096,9 @@ void IOScriptFile::RunCommands( int nID )
 
 			case IO_HAS_PARTICIPATED:
 			{
-				std::string szPlayer = GetArgValues( cmd.EntFire, pFunctionCall.Arguments );
+				std::string szPlayer = ApplyVariables(cmd.EntFire);
 				int nPlayerID = atoi( szPlayer.c_str() );
-				std::string szIDName = GetArgValues( cmd.Message, pFunctionCall.Arguments );
+				std::string szIDName = ApplyVariables(cmd.Message);
 				DialogAchievementData ach = GetAchievementByID( szIDName.c_str() );
 				if ( nPlayerID == 0 )
 				{
@@ -984,6 +1152,153 @@ void IOScriptFile::RunCommands( int nID )
 			}
 		    break;
 
+			case IO_RANDOM:
+			{
+				// Random min max varName - generates random float between min and max, stores in variable
+				float flMin = std::stof(cmd.Message);
+				float flMax = std::stof(cmd.Input);
+				std::string varName = cmd.VarName;
+				
+				// Generate random float
+				float flRandom = flMin + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (flMax - flMin)));
+				
+				// Store in variable
+				SetVariable(varName, std::to_string(flRandom));
+			}
+			break;
+
+			case IO_RANDOM_INT:
+			{
+				// RandomInt min max varName - generates random integer between min and max (inclusive), stores in variable
+				int iMin = std::stoi(cmd.Message);
+				int iMax = std::stoi(cmd.Input);
+				std::string varName = cmd.VarName;
+				
+				// Generate random integer (inclusive)
+				int iRandom = iMin + rand() % (iMax - iMin + 1);
+				
+				// Store in variable
+				SetVariable(varName, std::to_string(iRandom));
+			}
+			break;
+			case IO_SWITCH:
+			{
+				// switch varName - start a switch block
+				// Get the value of the variable (or use literal)
+				std::string switchVar = cmd.SwitchValue;
+				std::string value = GetVariable(switchVar);
+				if (value.empty())
+					value = switchVar; // Use literal if not a variable
+				
+				// Record the switch ID for this switch block
+				pFunctionCall.CurrentSwitchID = cmd.SwitchID;
+				pFunctionCall.CurrentCaseID = -1; // Not in a case yet
+				pFunctionCall.InsideSwitchBlock = SWITCHBLOCK_SWITCH;
+				pFunctionCall.SwitchValue = value;
+				pFunctionCall.SwitchMatched = false;
+				pFunctionCall.InCaseBlock = false;
+			}
+			break;
+
+		case IO_CASE:
+		{
+			// case value - check if matches switch value
+			// Only process if this case belongs to our current switch
+			if (pFunctionCall.InsideSwitchBlock != SWITCHBLOCK_NONE && cmd.SwitchID == pFunctionCall.CurrentSwitchID)
+			{
+				std::string caseValue = cmd.CaseValue;
+				// Check if case value matches switch value
+				if (!pFunctionCall.SwitchMatched && caseValue == pFunctionCall.SwitchValue)
+				{
+					pFunctionCall.SwitchMatched = true;
+					pFunctionCall.InsideSwitchBlock = SWITCHBLOCK_CASE;
+					pFunctionCall.CurrentCaseID = cmd.CaseID;
+					pFunctionCall.InCaseBlock = true; // We're now inside a matched case
+				}
+				else if (pFunctionCall.InCaseBlock && cmd.CaseID == pFunctionCall.CurrentCaseID)
+				{
+					// We hit the same case again (shouldn't happen normally)
+					pFunctionCall.Commands.erase(pFunctionCall.Commands.begin());
+					return;
+				}
+				else if (pFunctionCall.InCaseBlock && cmd.CaseID > pFunctionCall.CurrentCaseID)
+				{
+					// We were in a case block, but hit another case - 
+					// This means the previous case didn't have a break
+					// Exit the switch block entirely
+					pFunctionCall.InsideSwitchBlock = SWITCHBLOCK_SWITCH;
+					pFunctionCall.SwitchValue.clear();
+					pFunctionCall.SwitchMatched = false;
+					pFunctionCall.CurrentSwitchID = -1;
+					pFunctionCall.CurrentCaseID = -1;
+					pFunctionCall.InCaseBlock = false;
+					pFunctionCall.Commands.erase(pFunctionCall.Commands.begin());
+					return;
+				}
+				else
+				{
+					// Not matched, skip this case's commands
+					pFunctionCall.Commands.erase(pFunctionCall.Commands.begin());
+					return;
+				}
+			}
+			else
+			{
+				// Not in the right switch block, skip
+				pFunctionCall.Commands.erase(pFunctionCall.Commands.begin());
+				return;
+			}
+		}
+		break;
+
+	case IO_DEFAULT:
+	{
+		// default - execute if no case matched
+		if (pFunctionCall.InsideSwitchBlock != SWITCHBLOCK_NONE && cmd.SwitchID == pFunctionCall.CurrentSwitchID)
+		{
+			if (!pFunctionCall.SwitchMatched)
+			{
+				pFunctionCall.SwitchMatched = true;
+				pFunctionCall.InsideSwitchBlock = SWITCHBLOCK_DEFAULT;
+				pFunctionCall.CurrentCaseID = cmd.CaseID;
+				pFunctionCall.InCaseBlock = true; // We're now inside default case
+			}
+			else
+			{
+				// Already matched a case, skip default
+				pFunctionCall.Commands.erase(pFunctionCall.Commands.begin());
+				return;
+			}
+		}
+		else
+		{
+			// Not in the right switch block, skip
+			pFunctionCall.Commands.erase(pFunctionCall.Commands.begin());
+			return;
+		}
+	}
+	break;
+
+	case IO_END:
+	{
+		// We reached the end of the if block, reset it.
+		if ( pFunctionCall.InsideIfBlock != IFBLOCK_NONE )
+			pFunctionCall.InsideIfBlock = IFBLOCK_NONE;
+		// Also handle end of switch block - only if it's our switch
+		if ( pFunctionCall.InsideSwitchBlock != SWITCHBLOCK_NONE && cmd.SwitchID == pFunctionCall.CurrentSwitchID )
+		{
+			pFunctionCall.InsideSwitchBlock = SWITCHBLOCK_NONE;
+			pFunctionCall.SwitchValue.clear();
+			pFunctionCall.SwitchMatched = false;
+			pFunctionCall.CurrentSwitchID = -1;
+			pFunctionCall.CurrentCaseID = -1;
+			pFunctionCall.InCaseBlock = false;
+		}
+	}
+	break;
+
+			break;
+
 			case IO_WAIT:
 			{
 				// We still have delay, don't go to the next command until we are done.
@@ -994,7 +1309,7 @@ void IOScriptFile::RunCommands( int nID )
 
 			case IO_PRINT_TO_CHAT:
 			{
-			    std::string szOutput = GetArgValues( cmd.Message, pFunctionCall.Arguments );
+			    std::string szOutput = ApplyVariables(cmd.Message);
 			    szOutput = MessageCleanup( szOutput ) + "\n";
 				UTIL_ClientPrintAll( HUD_PRINTTALK, szOutput.c_str() );
 			}
@@ -1002,7 +1317,7 @@ void IOScriptFile::RunCommands( int nID )
 
 			case IO_PRINT_TO_CONSOLE:
 			{
-			    std::string szOutput = GetArgValues( cmd.Message, pFunctionCall.Arguments );
+			    std::string szOutput = ApplyVariables(cmd.Message);
 			    szOutput = MessageCleanup( szOutput ) + "\n";
 				for ( int i = 1; i <= gpGlobals->maxClients; i++ )
 				{
@@ -1010,13 +1325,6 @@ void IOScriptFile::RunCommands( int nID )
 				    if ( pPlayer )
 						UTIL_PrintConsole( szOutput.c_str(), pPlayer );
 				}
-			}
-			break;
-
-			case IO_END:
-			{
-				// We reached the end of the if block, reset it.
-			    pFunctionCall.InsideIfBlock = IOFunctionCallIfBlockStatements::IFBLOCK_NONE;
 			}
 			break;
 		}
@@ -1032,6 +1340,36 @@ uint IOScriptFile::GetCurrentID() const
 {
 	if ( m_Commands.size() == 0 ) return -1;
 	return m_Commands[ m_Commands.size() - 1 ].ID;
+}
+
+// Variable management methods
+void IOScriptFile::SetVariable( const std::string &szName, const std::string &szValue )
+{
+	m_Variables[szName] = szValue;
+}
+
+std::string IOScriptFile::GetVariable( const std::string &szName ) const
+{
+	auto it = m_Variables.find(szName);
+	if (it != m_Variables.end())
+		return it->second;
+	return "";
+}
+
+std::string IOScriptFile::ReplaceVariables( const std::string &str ) const
+{
+	std::string result = str;
+	for (const auto &pair : m_Variables)
+	{
+		std::string pattern = "{" + pair.first + "}";
+		size_t pos = 0;
+		while ((pos = result.find(pattern, pos)) != std::string::npos)
+		{
+			result.replace(pos, pattern.length(), pair.second);
+			pos += pair.second.length();
+		}
+	}
+	return result;
 }
 
 const char *IO_GetAvailableFunctions( IOFunctions_t nFunc )

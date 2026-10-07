@@ -1260,6 +1260,7 @@ void CBasePlayer::SetAnimation(PLAYER_ANIM playerAnim)
 	{
 	case PLAYER_RELOAD:
 		m_IdealActivity = ACT_RELOAD;
+		OnPlayerReload();
 		break;
 
 	case PLAYER_RELOAD_EMPTY:
@@ -1592,12 +1593,12 @@ void CBasePlayer::SetAnimation(PLAYER_ANIM playerAnim)
 	pev->sequence = animDesired;
 	pev->frame = 0;
 	ResetSequenceInfo();
+}
 
+void CBasePlayer::OnPlayerReload()
+{
 	// From this point, its survivor only
 	if ( pev->team != ZP::TEAM_SURVIVIOR ) return;
-
-	// Only do this if we are reloading
-	if ( m_IdealActivity != ACT_RELOAD ) return;
 
 	// Are there any friendlies nearby? If so, tell them we are reloading!
 	bool bHasFriendsNearby = false;
@@ -1609,7 +1610,7 @@ void CBasePlayer::SetAnimation(PLAYER_ANIM playerAnim)
 		if ( pFriend->entindex() == entindex() ) continue;
 
 		// We only care about players from our own team, the rest gets on the naughty list
-		if (FClassnameIs( pFriend->edict(), "player") && pFriend->pev->team == pev->team)
+		if (FClassnameIs( pFriend->edict(), "player" ) && pFriend->pev->team == pev->team)
 		{
 			// Since this has purely been a radius search to this point, we now
 			// make sure the object isn't behind glass or a grate.
@@ -2247,11 +2248,20 @@ float IntervalDistance( float x, float x0, float x1 )
 // Backported from Source SDK 2013, so we don't interact with crap behind walls etc.
 CBaseEntity *CBasePlayer::FindUseEntity()
 {
+	// Grab our useable items first (weapons etc)
+	CBaseEntity *pEyeEnt = GetUseEntityFromCrosshair( true );
+	if ( pEyeEnt ) return pEyeEnt;
+	// Now we care about func_button etc.
+	pEyeEnt = GetUseEntityFromCrosshair( false );
+	if ( pEyeEnt ) return pEyeEnt;
+	// Now we do sphere search
+	return GetUseEntitiesFromSphere( PLAYER_SEARCH_RADIUS );
+}
+
+CBaseEntity *CBasePlayer::GetUseEntityFromCrosshair( bool bUseableOnly )
+{
 	CBaseEntity *pObject = NULL;
 	CBaseEntity *pClosest = NULL;
-	Vector vecLOS;
-	float flMaxDot = VIEW_FIELD_NARROW;
-	float flDot;
 
 	UTIL_MakeVectors(pev->v_angle); // so we know which way we are facing
 
@@ -2281,7 +2291,8 @@ CBaseEntity *CBasePlayer::FindUseEntity()
 		pObject = CBaseEntity::Instance( tr.pHit );
 		if ( !pObject ) continue;
 
-		if ( pObject->ObjectCaps() & (FCAP_IMPULSE_USE | FCAP_ONOFF_USE) )
+		bool bCanUse = bUseableOnly ? pObject->IsUseableItem() : pObject->IsUseableBrush();
+		if ( bCanUse )
 		{
 			// GoldSrc does not have CollisionProp(), so we cannot use that.
 			// Instead, we use our Quake BBox.
@@ -2303,12 +2314,26 @@ CBaseEntity *CBasePlayer::FindUseEntity()
 		}
 	}
 
-	while ((pObject = UTIL_FindEntityInSphere(pObject, pev->origin, PLAYER_SEARCH_RADIUS)) != NULL)
+	return pClosest;
+}
+
+CBaseEntity *CBasePlayer::GetUseEntitiesFromSphere( float flDist )
+{
+	UTIL_MakeVectors(pev->v_angle); // so we know which way we are facing
+
+	float flMaxDot = VIEW_FIELD_NARROW;
+	float flDot;
+	Vector vecLOS;
+
+	Vector searchCenter = EyePosition();
+
+	CBaseEntity *pObject = nullptr;
+	CBaseEntity *pClosest = nullptr;
+	while ((pObject = UTIL_FindEntityInSphere(pObject, pev->origin, flDist)) != NULL)
 	{
 		// This object has an owner, SKIP.
 		if ( pObject->pev->owner ) continue;
-
-		if (pObject->ObjectCaps() & (FCAP_IMPULSE_USE | FCAP_CONTINUOUS_USE | FCAP_ONOFF_USE))
+		if ( pObject->IsUseableItem() || pObject->IsUseableBrush() )
 		{
 			// Since this has purely been a radius search to this point, we now
 			// make sure the object isn't behind glass or a grate.
@@ -2319,7 +2344,7 @@ CBaseEntity *CBasePlayer::FindUseEntity()
 			if ( trCheckOccluded.flFraction == 1.0 || pCheckHit == pObject )
 			{
 				// !!!PERFORMANCE- should this check be done on a per case basis AFTER we've determined that
-				// this object is actually usable? This dot is being done for every object within PLAYER_SEARCH_RADIUS
+				// this object is actually usable? This dot is being done for every object within flDist
 				// when player hits the use key. How many objects can be in that area, anyway? (sjb)
 				vecLOS = (VecBModelOrigin(pObject->pev) - (pev->origin + pev->view_ofs));
 
@@ -2351,7 +2376,6 @@ CBaseEntity *CBasePlayer::FindUseEntity()
 		}
 	}
 	pObject = pClosest;
-
 	return pObject;
 }
 

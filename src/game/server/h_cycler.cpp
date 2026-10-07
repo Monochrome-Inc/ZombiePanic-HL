@@ -146,6 +146,7 @@ public:
 		else
 			CGenericCycler::KeyValue( pkvd );
 	}
+	bool IsUseableItem() const override { return true; }
 private:
 	string_t m_iszBeacon;
 	Vector m_vecBeaconOffset;
