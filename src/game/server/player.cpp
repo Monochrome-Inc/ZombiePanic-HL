@@ -1596,6 +1596,9 @@ void CBasePlayer::SetAnimation(PLAYER_ANIM playerAnim)
 	// From this point, its survivor only
 	if ( pev->team != ZP::TEAM_SURVIVIOR ) return;
 
+	// Only do this if we are reloading
+	if ( m_IdealActivity != ACT_RELOAD ) return;
+
 	// Are there any friendlies nearby? If so, tell them we are reloading!
 	bool bHasFriendsNearby = false;
 	CBaseEntity *pFriend = nullptr;
@@ -2254,8 +2257,6 @@ CBaseEntity *CBasePlayer::FindUseEntity()
 	// Search for objects in a sphere (tests for entities that are not solid, yet still useable)
 	Vector searchCenter = EyePosition();
 
-	// TODO: If we have a highlighted entity nearby, grab that first.
-
 	float nearestDist = FLT_MAX;
 
 	const int NUM_TANGENTS = 8;
@@ -2277,7 +2278,7 @@ CBaseEntity *CBasePlayer::FindUseEntity()
 		pObject = CBaseEntity::Instance( tr.pHit );
 		if ( !pObject ) continue;
 
-		if (pObject->ObjectCaps() & (FCAP_IMPULSE_USE | FCAP_CONTINUOUS_USE | FCAP_ONOFF_USE))
+		if (pObject->ObjectCaps() & (FCAP_IMPULSE_USE | FCAP_ONOFF_USE))
 		{
 			// GoldSrc does not have CollisionProp(), so we cannot use that.
 			// Instead, we use our Quake BBox.

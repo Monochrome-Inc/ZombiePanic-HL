@@ -2138,7 +2138,7 @@ bool CStudioModelRenderer::IsLookingAtWeapon(void)
 			// Let's make sure we are close enough, we don't want to check for weapons far away
 			// because that would be stupid. :)
 			float flDistSqr = vToWeapon.LengthSqr();
-			if ( flDistSqr > ( 80.0f * 80.0f ) ) // 80 units max
+			if ( flDistSqr > ( 64.0f * 64.0f ) ) // 64 units max
 				return false;
 			return true;
 		}

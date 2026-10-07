@@ -2140,6 +2140,7 @@ int ShouldCollide( edict_t *pEntity, edict_t *pOther )
 
 struct PrecachedItem
 {
+	bool brush;
 	char name[64];
 	int index;
 };
@@ -2167,6 +2168,7 @@ int PRECACHE_MODEL( char *szModel )
 	{
 		PrecachedItem item;
 		item.index = index;
+		item.brush = false;
 		strncpy( item.name, szModel, sizeof( item.name ) );
 		precache_check_list.push_back( item );
 	}
@@ -2190,6 +2192,12 @@ void SET_MODEL( edict_t *pEntity, const char *szModel )
 	// If we start with *, we are a brush model.
 	if ( szModel[0] == '*' )
 	{
+		PrecachedItem item;
+		item.index = -1;
+		item.brush = true;
+		strncpy( item.name, szModel, sizeof( item.name ) );
+		precache_check_list.push_back( item );
+
 		g_engfuncs.pfnSetModel( pEntity, szModel );
 		return;
 	}
@@ -2244,7 +2252,12 @@ void DumpPrecacheData(entvars_t *pev, bool bFileDump)
 		fprintf(pFile, " ---- Models [%i/%i] ---- \n", nAmount, precache_check_max);
 
 		for ( const auto &item : precache_check_list )
-			fprintf(pFile, " %s\n", item.name);
+		{
+			if (item.brush)
+				fprintf(pFile, " Brush Model: %s\n", item.name);
+			else
+				fprintf(pFile, " %s\n", item.name);
+		}
 
 		fprintf(pFile, "\n");
 
