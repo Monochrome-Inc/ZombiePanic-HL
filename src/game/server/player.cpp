@@ -1605,6 +1605,9 @@ void CBasePlayer::SetAnimation(PLAYER_ANIM playerAnim)
 	Vector searchCenter = EyePosition();
 	while ((pFriend = UTIL_FindEntityInSphere(pFriend, pev->origin, 512)) != NULL)
 	{
+		// If we found ourselves, ignore.
+		if ( pFriend->entindex() == entindex() ) continue;
+
 		// We only care about players from our own team, the rest gets on the naughty list
 		if (FClassnameIs( pFriend->edict(), "player") && pFriend->pev->team == pev->team)
 		{
