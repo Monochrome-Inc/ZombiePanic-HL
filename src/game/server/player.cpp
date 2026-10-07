@@ -2294,7 +2294,6 @@ CBaseEntity *CBasePlayer::FindUseEntity()
 			float dist = delta.Length();
 			if ( dist < PLAYER_SEARCH_RADIUS )
 			{
-				Msg( "Found Entity %s Trace Search...\n", STRING( pObject->pev->classname ) );
 				pClosest = pObject;
 				
 				// if this is directly under the cursor just return it now
@@ -2319,8 +2318,6 @@ CBaseEntity *CBasePlayer::FindUseEntity()
 			CBaseEntity *pCheckHit = CBaseEntity::Instance( trCheckOccluded.pHit );
 			if ( trCheckOccluded.flFraction == 1.0 || pCheckHit == pObject )
 			{
-				Msg( "Found Entity %s in Sphere Search...\n", STRING( pObject->pev->classname ) );
-
 				// !!!PERFORMANCE- should this check be done on a per case basis AFTER we've determined that
 				// this object is actually usable? This dot is being done for every object within PLAYER_SEARCH_RADIUS
 				// when player hits the use key. How many objects can be in that area, anyway? (sjb)
@@ -2354,11 +2351,6 @@ CBaseEntity *CBasePlayer::FindUseEntity()
 		}
 	}
 	pObject = pClosest;
-
-	if ( pObject )
-		Msg( "%s was picked...\n", STRING( pObject->pev->classname ) );
-	else
-		Msg( "Found nothing...\n" );
 
 	return pObject;
 }
