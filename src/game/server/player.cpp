@@ -1592,6 +1592,37 @@ void CBasePlayer::SetAnimation(PLAYER_ANIM playerAnim)
 	pev->sequence = animDesired;
 	pev->frame = 0;
 	ResetSequenceInfo();
+
+	// From this point, its survivor only
+	if ( pev->team != ZP::TEAM_SURVIVIOR ) return;
+
+	// Are there any friendlies nearby? If so, tell them we are reloading!
+	bool bHasFriendsNearby = false;
+	CBaseEntity *pFriend = nullptr;
+	Vector searchCenter = EyePosition();
+	while ((pFriend = UTIL_FindEntityInSphere(pFriend, pev->origin, 512)) != NULL)
+	{
+		// We only care about players from our own team, the rest gets on the naughty list
+		if (FClassnameIs( pFriend->edict(), "player") && pFriend->pev->team == pev->team)
+		{
+			// Since this has purely been a radius search to this point, we now
+			// make sure the object isn't behind glass or a grate.
+			TraceResult trCheckOccluded;
+			UTIL_TraceLine( searchCenter, pFriend->EyePosition(), ignore_monsters, ENT(pev), &trCheckOccluded );
+
+			CBaseEntity *pCheckHit = CBaseEntity::Instance( trCheckOccluded.pHit );
+			if ( trCheckOccluded.flFraction == 1.0 || pCheckHit == pFriend )
+			{
+				bHasFriendsNearby = true;
+				break;
+			}
+		}
+	}
+	if ( !bHasFriendsNearby ) return;
+
+	// Make sure we have a proper chance of playing this.
+	if ( IsAlive() && RandomFloat( 0.0f, 1.0f ) < 0.1f )
+		DoVocalize( PlayerVocalizeType::VOCALIZE_COVER, true );
 }
 
 int CBasePlayer::SetNewActivity(const char *szActivity, bool bUseExt)
@@ -2222,6 +2253,8 @@ CBaseEntity *CBasePlayer::FindUseEntity()
 
 	// Search for objects in a sphere (tests for entities that are not solid, yet still useable)
 	Vector searchCenter = EyePosition();
+
+	// TODO: If we have a highlighted entity nearby, grab that first.
 
 	float nearestDist = FLT_MAX;
 
