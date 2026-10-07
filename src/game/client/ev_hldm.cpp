@@ -518,7 +518,7 @@ void EV_Fire1911(event_args_t *args)
 	if (EV_IsLocal(idx))
 	{
 		EV_MuzzleFlash();
-		gEngfuncs.pEventAPI->EV_WeaponAnimation(empty ? ANIM_SIG_SHOOT_EMPTY : ANIM_SIG_SHOOT1 + gEngfuncs.pfnRandomLong(0, 2), 2);
+		gEngfuncs.pEventAPI->EV_WeaponAnimation(empty ? ANIM_PISTOL_SHOOT_EMPTY : ANIM_PISTOL_SHOOT, 2);
 
 		V_PunchAxis(0, -2.0);
 	}
