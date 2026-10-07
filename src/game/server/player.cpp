@@ -2281,7 +2281,7 @@ CBaseEntity *CBasePlayer::FindUseEntity()
 		pObject = CBaseEntity::Instance( tr.pHit );
 		if ( !pObject ) continue;
 
-		if (pObject->ObjectCaps() & (FCAP_IMPULSE_USE | FCAP_ONOFF_USE))
+		if ( pObject->ObjectCaps() & (FCAP_IMPULSE_USE | FCAP_ONOFF_USE) )
 		{
 			// GoldSrc does not have CollisionProp(), so we cannot use that.
 			// Instead, we use our Quake BBox.
@@ -2294,6 +2294,7 @@ CBaseEntity *CBasePlayer::FindUseEntity()
 			float dist = delta.Length();
 			if ( dist < PLAYER_SEARCH_RADIUS )
 			{
+				Msg( "Found Entity %s Trace Search...\n", STRING( pObject->pev->classname ) );
 				pClosest = pObject;
 				
 				// if this is directly under the cursor just return it now
@@ -2305,6 +2306,9 @@ CBaseEntity *CBasePlayer::FindUseEntity()
 
 	while ((pObject = UTIL_FindEntityInSphere(pObject, pev->origin, PLAYER_SEARCH_RADIUS)) != NULL)
 	{
+		// This object has an owner, SKIP.
+		if ( pObject->pev->owner ) continue;
+
 		if (pObject->ObjectCaps() & (FCAP_IMPULSE_USE | FCAP_CONTINUOUS_USE | FCAP_ONOFF_USE))
 		{
 			// Since this has purely been a radius search to this point, we now
@@ -2315,6 +2319,8 @@ CBaseEntity *CBasePlayer::FindUseEntity()
 			CBaseEntity *pCheckHit = CBaseEntity::Instance( trCheckOccluded.pHit );
 			if ( trCheckOccluded.flFraction == 1.0 || pCheckHit == pObject )
 			{
+				Msg( "Found Entity %s in Sphere Search...\n", STRING( pObject->pev->classname ) );
+
 				// !!!PERFORMANCE- should this check be done on a per case basis AFTER we've determined that
 				// this object is actually usable? This dot is being done for every object within PLAYER_SEARCH_RADIUS
 				// when player hits the use key. How many objects can be in that area, anyway? (sjb)
@@ -2330,13 +2336,29 @@ CBaseEntity *CBasePlayer::FindUseEntity()
 					// only if the item is in front of the user
 					pClosest = pObject;
 					flMaxDot = flDot;
-					//ALERT( at_console, "%s : %f\n", STRING( pObject->pev->classname ), flDot );
 				}
-				//ALERT( at_console, "%s : %f\n", STRING( pObject->pev->classname ), flDot );
+				else
+				{
+					// If this is an useable item, then it has higher priority.
+					if ( pClosest && !pClosest->IsUseableItem() && pObject->IsUseableItem() )
+						pClosest = pObject;
+					else if ( pObject->IsUseableItem() )
+					{
+						Vector vToWeapon = pObject->pev->origin - pev->origin;
+						float flDistSqr = vToWeapon.LengthSqr();
+						if ( flDistSqr <= ( 78.0f * 78.0f ) ) // 78 units max
+							pClosest = pObject;
+					}
+				}
 			}
 		}
 	}
 	pObject = pClosest;
+
+	if ( pObject )
+		Msg( "%s was picked...\n", STRING( pObject->pev->classname ) );
+	else
+		Msg( "Found nothing...\n" );
 
 	return pObject;
 }
