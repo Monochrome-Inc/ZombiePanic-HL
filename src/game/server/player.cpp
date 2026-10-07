@@ -1625,7 +1625,7 @@ void CBasePlayer::SetAnimation(PLAYER_ANIM playerAnim)
 
 	// Make sure we have a proper chance of playing this.
 	if ( IsAlive() && RandomFloat( 0.0f, 1.0f ) < 0.1f )
-		DoVocalize( PlayerVocalizeType::VOCALIZE_COVER, true );
+		DoVocalize( PlayerVocalizeType::VOCALIZE_COVER, true, true );
 }
 
 int CBasePlayer::SetNewActivity(const char *szActivity, bool bUseExt)
@@ -6595,7 +6595,7 @@ void CBasePlayer::IncreaseBleed(int iIndex)
 		GiveAchievement( HC_BLOODHARVEST );
 }
 
-void CBasePlayer::DoVocalize( PlayerVocalizeType nType, bool bForced )
+void CBasePlayer::DoVocalize( PlayerVocalizeType nType, bool bForced, bool bNoChatLine )
 {
 	if ( nType == VOCALIZE_NONE ) return;
 	if ( pev->team != ZP::TEAM_SURVIVIOR ) return;
@@ -6604,10 +6604,13 @@ void CBasePlayer::DoVocalize( PlayerVocalizeType nType, bool bForced )
 	if ( !bCanSpeak ) return;
 	const float flDelay = bForced ? 1.0f : 5.0f;
 	m_flLastVocalize = gpGlobals->time + flDelay;
-	MESSAGE_BEGIN( MSG_ALL, gmsgVocalize );
-	WRITE_SHORT( entindex() );
-	WRITE_SHORT( nType );
-	MESSAGE_END();
+	if ( !bNoChatLine )
+	{
+		MESSAGE_BEGIN( MSG_ALL, gmsgVocalize );
+		WRITE_SHORT( entindex() );
+		WRITE_SHORT( nType );
+		MESSAGE_END();
+	}
 	VocalizeData data = GetVocalizeData( m_iCharacter, nType );
 	if ( data.Type == VOCALIZE_NONE ) return;
 	EMIT_SOUND_DYN( ENT(pev), CHAN_VOICE, data.VoiceLine.c_str(), 1, ATTN_NORM, 0, 100 );

@@ -597,7 +597,7 @@ public:
 	void NotifyOfWeaponPickup( CBasePlayerWeapon *pWeapon );
 
 	// The player will now speak
-	void DoVocalize( PlayerVocalizeType nType, bool bForced = false );
+	void DoVocalize( PlayerVocalizeType nType, bool bForced = false, bool bNoChatLine = false );
 
 	// When we can next switch weapon
 	float m_flNextWeaponSwitch;
