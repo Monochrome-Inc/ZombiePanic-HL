@@ -8,6 +8,7 @@ typedef enum
 {
 	BULLET_NONE = 0,
 	BULLET_PLAYER_SIG, // sig
+	BULLET_PLAYER_1911, // 1911
 	BULLET_PLAYER_PPK, // ppk
 	BULLET_PLAYER_CZ75, // cz75
 	BULLET_PLAYER_GLOCK, // glock
@@ -28,7 +29,11 @@ typedef enum
 	BULLET_MONSTER_9MM,
 	BULLET_MONSTER_MP5,
 	BULLET_MONSTER_12MM,
+
+	BULLET_MAX,
 } Bullet;
+
+const char *GetBulletStringName( Bullet nBullet );
 
 // Sig
 enum

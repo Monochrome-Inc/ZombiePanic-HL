@@ -51,7 +51,6 @@ extern DLL_GLOBAL int g_iSkillLevel;
 extern DLL_GLOBAL ULONG g_ulFrameCount;
 bool g_bReadParentKV = false;
 
-extern int giPrecacheGrunt;
 extern int gmsgSayText;
 extern int gmsgVGUIMenu;
 
@@ -1025,30 +1024,17 @@ void ClientPrecache(void)
 	PRECACHE_MODEL("models/v_barricade.mdl");
 
 	// hud sounds
-
 	PRECACHE_SOUND("common/wpn_hudoff.wav");
 	PRECACHE_SOUND("common/wpn_hudon.wav");
 	PRECACHE_SOUND("common/wpn_moveselect.wav");
 	PRECACHE_SOUND("common/wpn_select.wav");
 	PRECACHE_SOUND("common/wpn_denyselect.wav");
-#if 0
-	// geiger sounds
 
-	PRECACHE_SOUND("player/geiger6.wav");
-	PRECACHE_SOUND("player/geiger5.wav");
-	PRECACHE_SOUND("player/geiger4.wav");
-	PRECACHE_SOUND("player/geiger3.wav");
-	PRECACHE_SOUND("player/geiger2.wav");
-	PRECACHE_SOUND("player/geiger1.wav");
-#endif
 	// Round End sounds
 	PRECACHE_SOUND("modes/win_draw.wav");
 	PRECACHE_SOUND("modes/win_zombie.wav");
 	PRECACHE_SOUND("modes/win_human.wav");
 	PRECACHE_SOUND("modes/round_ready.wav");
-
-	if (giPrecacheGrunt)
-		UTIL_PrecacheOther("monster_human_grunt");
 
 	m_usResetDecals = PRECACHE_EVENT(1, "events/decal_reset.sc");
 
@@ -1056,6 +1042,8 @@ void ClientPrecache(void)
 
 	// For player vocalize
 	PrecachePlayerVocalizeSounds();
+	// Weapon Spread file
+	PrecachePlayerWeaponSpreadFile();
 }
 
 /*

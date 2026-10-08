@@ -30,6 +30,7 @@
 #include "weapons.h"
 #include "func_break.h"
 #include "game.h"
+#include "player.h"
 #include "zp/zp_shared_weapons.h"
 
 extern DLL_GLOBAL Vector g_vecAttackDir;
@@ -1485,7 +1486,8 @@ Vector CBaseEntity::FireBulletsPlayer(ULONG cShots, Vector vecSrc, Vector vecDir
 	Vector vecUp = gpGlobals->v_up;
 	float x = 0.0f;
 	float y = 0.0f;
-	float z = 0.0f;
+	WeaponSpreadData wpnSpreadData;
+	bool bUseOldSpread = true;
 
 	if (pevAttacker == NULL)
 		pevAttacker = pev; // the default attacker is ourselves
@@ -1493,16 +1495,33 @@ Vector CBaseEntity::FireBulletsPlayer(ULONG cShots, Vector vecSrc, Vector vecDir
 	ClearMultiDamage();
 	gMultiDamage.type = DMG_BULLET | DMG_NEVERGIB;
 
+	// Grabs the weapon spread, increases everytime this function is called.
+	CBaseEntity *pAttacker = CBaseEntity::Instance( pevAttacker );
+	CBasePlayer *pPlayerAttacker = dynamic_cast< CBasePlayer* >( pAttacker );
+	if ( pPlayerAttacker )
+		bUseOldSpread = !pPlayerAttacker->GetWeaponSpread( iBulletType, wpnSpreadData );
+
+	if ( !bUseOldSpread )
+	{
+		x = wpnSpreadData.SpreadX;
+		y = wpnSpreadData.SpreadY;
+	}
+
 	for (ULONG iShot = 1; iShot <= cShots; iShot++)
 	{
-		//Use player's random seed.
-		// get circular gaussian spread
-		x = UTIL_SharedRandomFloat(shared_rand + iShot, -0.5, 0.5) + UTIL_SharedRandomFloat(shared_rand + (1 + iShot), -0.5, 0.5);
-		y = UTIL_SharedRandomFloat(shared_rand + (2 + iShot), -0.5, 0.5) + UTIL_SharedRandomFloat(shared_rand + (3 + iShot), -0.5, 0.5);
-		z = x * x + y * y;
-
-		Vector vecDir = vecDirShooting + x * vecSpread.x * vecRight + y * vecSpread.y * vecUp;
+		Vector vecDir;
 		Vector vecEnd;
+
+		if ( bUseOldSpread )
+		{
+			//Use player's random seed.
+			// get circular gaussian spread
+			x = UTIL_SharedRandomFloat(shared_rand + iShot, -0.5, 0.5) + UTIL_SharedRandomFloat(shared_rand + (1 + iShot), -0.5, 0.5);
+			y = UTIL_SharedRandomFloat(shared_rand + (2 + iShot), -0.5, 0.5) + UTIL_SharedRandomFloat(shared_rand + (3 + iShot), -0.5, 0.5);
+			vecDir = vecDirShooting + x * vecSpread.x * vecRight + y * vecSpread.y * vecUp;
+		}
+		else
+			vecDir = vecDirShooting + x * vecRight + y * vecUp;
 
 		vecEnd = vecSrc + vecDir * flDistance;
 		UTIL_TraceLine(vecSrc, vecEnd, dont_ignore_monsters, ENT(pev) /*pentIgnore*/, &tr);
@@ -1579,7 +1598,13 @@ Vector CBaseEntity::FireBulletsPlayer(ULONG cShots, Vector vecSrc, Vector vecDir
 		WRITE_BYTE( 0 ); // decay * 0.1
 	MESSAGE_END();
 
-	return Vector(x * vecSpread.x, y * vecSpread.y, 0.0);
+	if ( bUseOldSpread )
+	{
+		x = x * vecSpread.x;
+		y = y * vecSpread.y;
+	}
+
+	return Vector( x, y, 0.0 );
 }
 
 void CBaseEntity::SoftRemove()

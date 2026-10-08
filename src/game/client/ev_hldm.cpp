@@ -534,7 +534,7 @@ void EV_Fire1911(event_args_t *args)
 
 	VectorCopy(forward, vecAiming);
 
-	EV_HLDM_FireBullets(idx, forward, right, up, 1, vecSrc, vecAiming, 8192, BULLET_PLAYER_SIG, 0, NULL, args->fparam1, args->fparam2);
+	EV_HLDM_FireBullets(idx, forward, right, up, 1, vecSrc, vecAiming, 8192, BULLET_PLAYER_1911, 0, NULL, args->fparam1, args->fparam2);
 }
 
 void EV_FireSig(event_args_t *args)

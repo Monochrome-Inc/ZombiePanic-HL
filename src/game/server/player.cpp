@@ -125,6 +125,7 @@ bool UTIL_IsValidPlayerModel( const char *szModel, bool bIsZombie )
 }
 
 std::vector<VocalizeData> m_VocalizeData;
+std::vector<WeaponSpreadList> m_WeaponSpreadList;
 
 static ConVar sv_allow_player_decals( "sv_allow_player_decals", "1", FCVAR_SERVER, "Whether player decals are allowed" );
 static ConVar sv_player_runspeed_gait_speed( "sv_player_runspeed_gait_speed", "100", FCVAR_SERVER, "The speed at which the player will switch to the running gait" );
@@ -249,7 +250,6 @@ TYPEDESCRIPTION CBasePlayer::m_playerSaveData[] = {
 
 };
 
-int giPrecacheGrunt = 0;
 int gmsgShake = 0;
 int gmsgFade = 0;
 int gmsgSelAmmo = 0;
@@ -1602,6 +1602,10 @@ void CBasePlayer::OnPlayerReload()
 	// A simple check for CWeaponBaseSingleAction
 	if ( m_Activity == m_IdealActivity ) return;
 
+	// We are reloading, reset.
+	m_nCurrentBulletShot = 0;
+	m_flLastBulletShot = -1;
+
 	// Are there any friendlies nearby? If so, tell them we are reloading!
 	bool bHasFriendsNearby = false;
 	CBaseEntity *pFriend = nullptr;
@@ -2873,7 +2877,6 @@ void CBasePlayer::UpdateFatigue()
 int CBasePlayer::GetMaxHealth()
 {
 	if ( pev->team == ZP::TEAM_ZOMBIE ) return ZP::MaxHealth[1];
-	if ( m_bPunishLateJoiner ) return 45;
 	return ZP::MaxHealth[0];
 }
 
@@ -5104,6 +5107,9 @@ edict_t* EntSelectSpawnPoint(CBasePlayer* pPlayer)
 		}
 	}
 
+	// Reset bullet shot
+	pPlayer->ResetBulletShot();
+
 	if (FNullEnt(pSpot))
 	{
 		ALERT(at_error, "PutClientInServer: no info_player_start on level");
@@ -5150,7 +5156,7 @@ void CBasePlayer::Spawn(void)
 	m_AssistedDamage.clear();
 
 	pev->classname = MAKE_STRING("player");
-	pev->health = GetMaxHealth();
+	pev->health = m_bPunishLateJoiner ? 45 : GetMaxHealth();
 	pev->armorvalue = 0;
 	pev->takedamage = DAMAGE_AIM;
 	pev->solid = SOLID_SLIDEBOX;
@@ -7981,4 +7987,122 @@ VocalizeData GetVocalizeData( PlayerCharacter nCharacter, PlayerVocalizeType nTy
 			return data;
 	}
 	return default_vocalize;
+}
+
+//=========================================================
+// Player Weapon Spread
+//=========================================================
+
+const char *GetBulletStringName( Bullet nBullet )
+{
+	switch ( nBullet )
+	{
+	    case BULLET_PLAYER_SIG: return "sig";
+	    case BULLET_PLAYER_1911: return "1911";
+	    case BULLET_PLAYER_PPK: return "ppk";
+	    case BULLET_PLAYER_CZ75: return "cz75";
+	    case BULLET_PLAYER_GLOCK: return "glock17";
+	    case BULLET_PLAYER_MP5: return "mp5";
+	    case BULLET_PLAYER_M16: return "ar556";
+	    case BULLET_PLAYER_SKS: return "sks";
+	    case BULLET_PLAYER_357: return "357";
+	    case BULLET_PLAYER_BUCKSHOT: return "shotgun";
+	    case BULLET_PLAYER_DBARREL: return "dbarrel";
+	}
+	return "none";
+}
+
+static WeaponSpreadList default_wpnspread;
+
+void PrecachePlayerWeaponSpreadFile()
+{
+	// Set the default data
+	default_wpnspread.Type = BULLET_NONE;
+	default_wpnspread.List = {
+		{ 0, 0, 0 }
+	};
+
+	// Clear previous data, if we have any.
+	m_WeaponSpreadList.clear();
+
+	// Read the manifest file
+	KeyValuesAD kvData( "WeaponSpreadData" );
+	if ( kvData->LoadFromFile( g_pFullFileSystem, "scripts/weapon_spread.txt" ) )
+	{
+		for ( int i = 0; i < Bullet::BULLET_MAX; i++ )
+		{
+			Bullet nBulletType = (Bullet)i;
+
+			KeyValues *pWeaponData = kvData->FindKey( GetBulletStringName( nBulletType ) );
+			if ( !pWeaponData ) continue;
+
+			int maxIterations = pWeaponData->GetInt( "MaxIterations", 1 );
+			
+			WeaponSpreadList data;
+			data.Type = nBulletType;
+
+			std::vector<WeaponSpreadData> m_DataList;
+			// We always start with 1, as that is our first bullet.
+			for ( int y = 1; y <= maxIterations; y++ )
+			{
+				KeyValues *pSpreadData = pWeaponData->FindKey( UTIL_VarArgs( "%i", y ) );
+				if ( !pSpreadData ) continue;
+				WeaponSpreadData spreadData;
+				spreadData.Amount = y;
+				spreadData.SpreadX = pSpreadData->GetFloat( "SpreadX" );
+				spreadData.SpreadY = pSpreadData->GetFloat( "SpreadY" );
+				m_DataList.push_back( spreadData );
+			}
+			data.List = m_DataList;
+
+			m_WeaponSpreadList.push_back( data );
+		}
+	}
+}
+
+WeaponSpreadList GetWeaponSpreadList( const int &nType, bool &bIsValid )
+{
+	for ( size_t i = 0; i < m_WeaponSpreadList.size(); i++ )
+	{
+		WeaponSpreadList data = m_WeaponSpreadList[i];
+		if ( data.Type == nType )
+		{
+			bIsValid = true;
+			return data;
+		}
+	}
+	bIsValid = false;
+	return default_wpnspread;
+}
+
+WeaponSpreadData GetWeaponSpreadData( const int &iBullet, const int &nType, bool &bIsValid )
+{
+	WeaponSpreadList data = GetWeaponSpreadList( nType, bIsValid );
+	WeaponSpreadData bestSpread = default_wpnspread.List[0];
+	for ( size_t i = 0; i < data.List.size(); i++ )
+	{
+		WeaponSpreadData wpnSpread = data.List[i];
+		if ( iBullet >= wpnSpread.Amount )
+			bestSpread = wpnSpread;
+	}
+	return bestSpread;
+}
+
+bool CBasePlayer::GetWeaponSpread( const int &nType, WeaponSpreadData &data )
+{
+	// If we waited long enough, then we reset this.
+	if ( gpGlobals->time > m_flLastBulletShot )
+		m_nCurrentBulletShot = 0;
+	m_flLastBulletShot = gpGlobals->time + 2.0f;
+	m_nCurrentBulletShot++;
+
+	bool bIsValid;
+	data = GetWeaponSpreadData( m_nCurrentBulletShot, nType, bIsValid );
+	return bIsValid;
+}
+
+void CBasePlayer::ResetBulletShot()
+{
+	m_nCurrentBulletShot = 0;
+	m_flLastBulletShot = -1;
 }

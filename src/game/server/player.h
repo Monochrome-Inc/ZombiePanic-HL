@@ -113,6 +113,7 @@ struct PlayerCharacterType
 };
 
 void PrecachePlayerVocalizeSounds();
+void PrecachePlayerWeaponSpreadFile();
 
 struct VocalizeData
 {
@@ -121,6 +122,20 @@ struct VocalizeData
 	std::string VoiceLine;
 };
 VocalizeData GetVocalizeData( PlayerCharacter nCharacter, PlayerVocalizeType nType );
+
+struct WeaponSpreadData
+{
+	int Amount;
+	float SpreadX;
+	float SpreadY;
+};
+
+struct WeaponSpreadList
+{
+	int Type;
+	std::vector<WeaponSpreadData> List;
+};
+WeaponSpreadData GetWeaponSpreadData( const int &iBullet, const int &nType, bool &bIsValid );
 
 #define CHAT_FLOOD          3
 #define CHAT_INTERVAL       0.5f
@@ -462,6 +477,9 @@ private:
 	float m_flLastFatigue = -1;
 	bool m_bFatigueUpdated = false;
 
+	float m_flLastBulletShot = -1;
+	int m_nCurrentBulletShot = 0;
+
 	float m_flLastRegen = -1;
 	float m_flRegenTime = 0;
 	bool m_bRegenUpdated = false;
@@ -486,6 +504,10 @@ public:
 	void GetUseEntitiesFromSphere( std::vector<int> &nEntList, const Vector &vStart, const float &flDist, const bool &bUseableOnly, const bool &bDoExtraHelp = false );
 
 	virtual bool IsBot( void ) { return false; }
+
+	// Weapon Bullet Spread
+	bool GetWeaponSpread( const int &nType, WeaponSpreadData &data );
+	void ResetBulletShot();
 
 	void GiveCurrentAmmo();
 	const char *GetPlayerName() const;

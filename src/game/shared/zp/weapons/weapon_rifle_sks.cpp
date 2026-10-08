@@ -66,7 +66,7 @@ float CWeaponRifleSKS::Deploy()
 {
 	ResetMeleeState();
 	DoDeploy( "models/v_sks.mdl", "models/p_sks.mdl", IsEmpty() ? ANIM_SKS_DRAW_EMPTY : ANIM_SKS_DRAW, "556ar" );
-	return GetAnimationTime( 33, 35 );
+	return GetAnimationTime( 33, 20 );
 }
 
 void CWeaponRifleSKS::OnWeaponPrimaryAttack()
@@ -139,9 +139,10 @@ void CWeaponRifleSKS::OnRequestedAnimation( SingleActionAnimReq act )
 			SendWeaponAnim( ANIM_SKS_RELOAD_LOOP );
 			m_pPlayer->SetAnimation( PLAYER_RELOAD );
 
-			float flAnimTime = GetAnimationTime( 19, 30 );
+			float flAnimTime = GetAnimationTime( 19, 40 );
 		    m_flNextReload = UTIL_WeaponTimeBase() + flAnimTime;
 		    m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + flAnimTime;
+		    int test = (1 << 11);
 		}
 		break;
 		case CWeaponBaseSingleAction::ANIM_RELOAD_END:
@@ -149,7 +150,7 @@ void CWeaponRifleSKS::OnRequestedAnimation( SingleActionAnimReq act )
 			SendWeaponAnim( ANIM_SKS_RELOAD_END );
 			m_pPlayer->SetAnimation( PLAYER_RELOAD_END );
 			AddWeaponSound( "weapons/sks/slideforward.wav", 1, ATTN_NORM, GetAnimationTime( 7, 30 ) );
-			float flAnimTime = GetAnimationTime( 34, 30 );
+			float flAnimTime = GetAnimationTime( 34, 22 );
 		    m_flNextReload = UTIL_WeaponTimeBase() + flAnimTime;
 		    m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + flAnimTime;
 		}
@@ -182,6 +183,8 @@ void CWeaponRifleSKS::Reload( void )
 
 void CWeaponRifleSKS::SecondaryAttack( void )
 {
+	// If we are reloading, no melee.
+	if ( m_fInSpecialReload > 0 ) return;
 	if ( IsInHeavyAttack() )
 	{
 		m_pPlayer->SetAnimation( PLAYER_ATTACK2_HOLD );

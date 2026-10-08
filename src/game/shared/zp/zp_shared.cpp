@@ -751,6 +751,7 @@ std::vector<BulletPenetrationMaterial> m_BulletPenetrationMat_Buckshot = {
 
 BulletPenetration m_BulletPenetrationList[] = {
 	{ BULLET_PLAYER_SIG, 0.5, 1, 300, m_BulletPenetrationMat_WeakPistols },
+	{ BULLET_PLAYER_1911, 0.5, 1, 300, m_BulletPenetrationMat_WeakPistols },
 	{ BULLET_PLAYER_PPK, 0.4, 1, 300, m_BulletPenetrationMat_WeakPistols },
 	{ BULLET_PLAYER_CZ75, 0.4, 1, 300, m_BulletPenetrationMat_WeakPistols },
 	{ BULLET_PLAYER_GLOCK, 0.8, 1, 300, m_BulletPenetrationMat_WeakPistols },
