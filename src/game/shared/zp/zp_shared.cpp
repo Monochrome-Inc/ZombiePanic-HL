@@ -406,6 +406,31 @@ WeaponData CreateWeaponSlotData( const char *szClassname )
 		if ( pWeaponFlags->GetBool( "ALLOWDUPLICATE" ) ) slot.Flags |= ITEM_FLAG_ALLOWDUPLICATE;
 	}
 
+	// Dynamic Crosshair
+	KeyValues *pWeaponCrosshair = pWeaponScript->FindKey( "CrossHair" );
+	if ( pWeaponCrosshair )
+	{
+		slot.DynCrossHair.type = (DynamicCrossHairTypes_t)pWeaponCrosshair->GetInt( "Type", DynamicCrossHairTypes_t::k_eCrossHairDefault );
+		slot.DynCrossHair.increase_spanner = pWeaponCrosshair->GetInt( "IncreaseSpanner", 5 );
+		slot.DynCrossHair.increase_length = pWeaponCrosshair->GetInt( "IncreaseLength", 5 );
+		KeyValues *pDynSpan = pWeaponCrosshair->FindKey( "Spanner" );
+		if ( pDynSpan )
+		{
+			slot.DynCrossHair.spanner[DynamicCrossHairAxis_t::k_eDynTop] = pDynSpan->GetInt( "Top", 5 );
+			slot.DynCrossHair.spanner[DynamicCrossHairAxis_t::k_eDynLeft] = pDynSpan->GetInt( "Left", 5 );
+			slot.DynCrossHair.spanner[DynamicCrossHairAxis_t::k_eDynRight] = pDynSpan->GetInt( "Right", 5 );
+			slot.DynCrossHair.spanner[DynamicCrossHairAxis_t::k_eDynBottom] = pDynSpan->GetInt( "Bottom", 5 );
+		}
+		KeyValues *pDynLength = pWeaponCrosshair->FindKey( "Length" );
+		if ( pDynLength )
+		{
+			slot.DynCrossHair.length[DynamicCrossHairAxis_t::k_eDynTop] = pDynLength->GetInt( "Top", 5 );
+			slot.DynCrossHair.length[DynamicCrossHairAxis_t::k_eDynLeft] = pDynLength->GetInt( "Left", 5 );
+			slot.DynCrossHair.length[DynamicCrossHairAxis_t::k_eDynRight] = pDynLength->GetInt( "Right", 5 );
+			slot.DynCrossHair.length[DynamicCrossHairAxis_t::k_eDynBottom] = pDynLength->GetInt( "Bottom", 5 );
+		}
+	}
+
 	slot.Weight = pWeaponScript->GetFloat( "Weight", 0 );
 	slot.DoubleSlots = pWeaponScript->GetBool( "DoubleSlots", false );
 

@@ -9,6 +9,7 @@ public:
 	virtual void VidInit();
 	virtual void Draw(float time);
 	void UpdateSpeed(const float velocity[2]);
+	int GetSpeed() const { return m_iSpeed; }
 
 private:
 	int m_iOldSpeed;

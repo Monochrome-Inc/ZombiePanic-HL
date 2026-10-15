@@ -8021,6 +8021,7 @@ void PrecachePlayerWeaponSpreadFile()
 	default_wpnspread.List = {
 		{ 0, 0, 0 }
 	};
+	default_wpnspread.ResetTime = 1.0f;
 
 	// Clear previous data, if we have any.
 	m_WeaponSpreadList.clear();
@@ -8037,9 +8038,10 @@ void PrecachePlayerWeaponSpreadFile()
 			if ( !pWeaponData ) continue;
 
 			int maxIterations = pWeaponData->GetInt( "MaxIterations", 1 );
-			
+
 			WeaponSpreadList data;
 			data.Type = nBulletType;
+			data.ResetTime = pWeaponData->GetFloat( "ResetTime", 1.0f );
 
 			std::vector<WeaponSpreadData> m_DataList;
 			// We always start with 1, as that is our first bullet.
@@ -8075,9 +8077,10 @@ WeaponSpreadList GetWeaponSpreadList( const int &nType, bool &bIsValid )
 	return default_wpnspread;
 }
 
-WeaponSpreadData GetWeaponSpreadData( const int &iBullet, const int &nType, bool &bIsValid )
+WeaponSpreadData GetWeaponSpreadData( const int &iBullet, const int &nType, bool &bIsValid, float &flResetTime )
 {
 	WeaponSpreadList data = GetWeaponSpreadList( nType, bIsValid );
+	flResetTime = data.ResetTime;
 	WeaponSpreadData bestSpread = default_wpnspread.List[0];
 	for ( size_t i = 0; i < data.List.size(); i++ )
 	{
@@ -8093,11 +8096,25 @@ bool CBasePlayer::GetWeaponSpread( const int &nType, WeaponSpreadData &data )
 	// If we waited long enough, then we reset this.
 	if ( gpGlobals->time > m_flLastBulletShot )
 		m_nCurrentBulletShot = 0;
-	m_flLastBulletShot = gpGlobals->time + 2.0f;
+
+	float flResetTime;
+	bool bIsValid;
+	data = GetWeaponSpreadData( m_nCurrentBulletShot, nType, bIsValid, flResetTime );
+	m_flLastBulletShot = gpGlobals->time + flResetTime;
 	m_nCurrentBulletShot++;
 
-	bool bIsValid;
-	data = GetWeaponSpreadData( m_nCurrentBulletShot, nType, bIsValid );
+	// If we are moving, then add extra to the X and Y pos.
+	int playerspeed = pev->speed;
+	float nSpannerIncreaseBy = (playerspeed / 25);
+	int iExtraSpan = static_cast<int>( nSpannerIncreaseBy );
+	if ( iExtraSpan > 0 )
+	{
+		// We need to adjust it for the X,Y cords
+		float flAdjusted = (iExtraSpan / 20);
+		data.SpreadX += flAdjusted;
+		data.SpreadY += flAdjusted;
+	}
+
 	return bIsValid;
 }
 

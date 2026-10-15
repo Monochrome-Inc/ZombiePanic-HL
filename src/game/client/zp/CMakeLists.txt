@@ -14,6 +14,8 @@ add_sources(
 	hud/zp_progressbar.h
 	hud/zp_voicewheel.cpp
 	hud/zp_voicewheel.h
+	hud/zp_crosshair.cpp
+	hud/zp_crosshair.h
 	music/music_ui.h
 	music/music_ui.cpp
 	music/music_manager.h

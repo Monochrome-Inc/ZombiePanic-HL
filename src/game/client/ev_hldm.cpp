@@ -40,6 +40,8 @@
 #include "hud/spectator.h"
 
 #include "zp/zp_shared_weapons.h"
+#include "zp/hud/zp_crosshair.h"
+#include "hud/ammo.h"
 
 extern engine_studio_api_t IEngineStudio;
 
@@ -413,6 +415,15 @@ Go to the trouble of combining multiple pellets into a single damage call.
 */
 void EV_HLDM_FireBullets(int idx, float *forward, float *right, float *up, int cShots, float *vecSrc, float *vecDirShooting, float flDistance, int iBulletType, int iTracerFreq, int *tracerCount, float flSpreadX, float flSpreadY)
 {
+	WEAPON *pActive = CHudAmmo::Get()->GetActiveWeapon();
+	// Update our crosshair
+	if ( pActive )
+	{
+		// If not active, return default settings.
+		WeaponData wpnDat = GetWeaponSlotInfo( pActive->szName );
+		CHudZPCrossHair::Get()->UpdateDynamicCrosshair( wpnDat.DynCrossHair.increase_spanner, wpnDat.DynCrossHair.increase_length, 0.15f );
+	}
+
 	int i;
 	pmtrace_t tr;
 	int iShot;

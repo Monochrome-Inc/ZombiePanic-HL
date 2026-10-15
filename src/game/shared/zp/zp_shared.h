@@ -187,6 +187,33 @@ enum WeaponDataIcons
 	MAX_ICONS,
 };
 
+enum DynamicCrossHairAxis_t
+{
+	k_eDynTop = 0,
+	k_eDynLeft,
+	k_eDynRight,
+	k_eDynBottom,
+
+	k_eDynMax
+};
+
+enum DynamicCrossHairTypes_t
+{
+	k_eCrossHairDefault = 0,
+	k_eCrossHairWithCircle,
+	k_eCrossHairCircleOnly,
+};
+
+struct DynamicCrosshairTarget
+{
+public:
+	int spanner[DynamicCrossHairAxis_t::k_eDynMax] { 0, 0, 0, 0 };
+	int length[DynamicCrossHairAxis_t::k_eDynMax] { 0, 0, 0, 0 };
+	int increase_spanner = 0;
+	int increase_length = 0;
+	DynamicCrossHairTypes_t type = k_eCrossHairDefault;
+};
+
 struct WeaponData
 {
 	ZPWeaponID WeaponID;
@@ -206,6 +233,9 @@ struct WeaponData
 	bool DoubleSlots = false; // Does this weapon take 2 slots?
 	float WeaponSpread[2]; // 0 - Primary, 1 - Secondary
 	float FireRate[2]; // 0 - Primary, 1 - Secondary
+
+	// Dynamic CrossHair data
+	DynamicCrosshairTarget DynCrossHair; // 0 - Spanner, 1 - Length
 };
 
 /// <summary>

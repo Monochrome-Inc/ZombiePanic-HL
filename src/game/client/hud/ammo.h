@@ -92,6 +92,8 @@ public:
 	void UserCmd_Slot10();
 	void UserCmd_Close();
 
+	WEAPON *GetActiveWeapon() { return m_pWeapon; }
+
 private:
 	float m_fFade;
 	WEAPON *m_pWeapon;

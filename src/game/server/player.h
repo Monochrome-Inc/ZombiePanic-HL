@@ -132,10 +132,11 @@ struct WeaponSpreadData
 
 struct WeaponSpreadList
 {
+	float ResetTime;
 	int Type;
 	std::vector<WeaponSpreadData> List;
 };
-WeaponSpreadData GetWeaponSpreadData( const int &iBullet, const int &nType, bool &bIsValid );
+WeaponSpreadData GetWeaponSpreadData( const int &iBullet, const int &nType, bool &bIsValid, float &flResetTime );
 
 #define CHAT_FLOOD          3
 #define CHAT_INTERVAL       0.5f

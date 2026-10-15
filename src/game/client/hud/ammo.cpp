@@ -698,7 +698,7 @@ void CHudAmmo::Draw(float flTime)
 	DrawWeaponSlots();
 
 	// Draw our crosshair
-	DrawCrosshair();
+	//DrawCrosshair();
 
 	if (!(m_iFlags & HUD_ACTIVE))
 		return;
