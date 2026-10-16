@@ -14,11 +14,16 @@ public:
 
 	CMusicUI();
 
+	void Init() override;
+	void VidInit() override;
+
 	virtual bool IsAllowedToDraw();
 	virtual void PaintBackground() {}
 	virtual void Paint();
 	virtual void ApplySchemeSettings( vgui2::IScheme *pScheme );
 	void NewTrackPlaying();
+	void HideUI();
+	void DrawUI();
 
 private:
 

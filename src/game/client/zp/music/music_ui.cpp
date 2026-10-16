@@ -29,7 +29,7 @@ CMusicUI::CMusicUI()
 	SetPaintBackgroundEnabled( false );
 	SetProportional( true );
 
-	m_flDrawTime = 0;
+	m_flDrawTime = gHUD.m_flTime;
 
 	m_pTextTitleBG1 = new vgui2::Label( this, "textbg1", "Unknown Track" );
 	m_pTextTitleBG1->SetContentAlignment( vgui2::Label::a_center );
@@ -48,6 +48,26 @@ CMusicUI::CMusicUI()
 	m_pTextTitleBG2->SetPos( 2, 2 );
 
 	InvalidateLayout();
+}
+
+void CMusicUI::Init()
+{
+	HideUI();
+}
+
+void CMusicUI::VidInit()
+{
+	HideUI();
+}
+
+void CMusicUI::HideUI()
+{
+	m_flDrawTime = gHUD.m_flTime;
+}
+
+void CMusicUI::DrawUI()
+{
+	m_flDrawTime = gHUD.m_flTime + 1.0;
 }
 
 void CMusicUI::ApplySchemeSettings( vgui2::IScheme *pScheme )

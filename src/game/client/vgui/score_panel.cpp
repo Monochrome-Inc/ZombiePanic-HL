@@ -22,6 +22,7 @@
 #include "gameui/gameui_viewport.h"
 #include "zp/zp_shared.h"
 #include "zp/zp_apicallback.h"
+#include "zp/music/music_ui.h"
 
 #define STEAM_PROFILE_URL "http://steamcommunity.com/profiles/"
 
@@ -310,6 +311,10 @@ void CScorePanel::OnThink()
 	{
 		UpdateAllClients();
 	}
+
+	// Draw the Music UI if visible.
+	if ( IsVisible() )
+		CMusicUI::Get()->DrawUI();
 }
 
 void CScorePanel::OnCommand(const char *command)
