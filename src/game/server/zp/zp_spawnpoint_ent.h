@@ -19,11 +19,14 @@ public:
 
 	void DisableSpawn();
 
+	void TemporarilyEnableSpawn( const float &flTime );
+
 private:
 	bool m_bEnabled = true;
 	bool m_bEnabledRem = true;
 	bool m_bHumanSpawn = false;
 	float m_flDisableTime = -1;
+	bool m_bTempEnable = false;
 };
 
 #endif

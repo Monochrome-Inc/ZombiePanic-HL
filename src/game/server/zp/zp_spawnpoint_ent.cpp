@@ -52,6 +52,17 @@ void CBasePlayerSpawnPoint::OnScriptCallBack( KeyValues *pData )
 
 bool CBasePlayerSpawnPoint::HasSpawned()
 {
+	// Temp enable
+	if ( m_bTempEnable )
+	{
+		if ( m_flDisableTime != -1 )
+		{
+			if ( m_flDisableTime - gpGlobals->time > 0.0f ) return false;
+			m_flDisableTime = -1;
+			m_bTempEnable = false;
+		}
+	}
+
 	if ( !m_bEnabled ) return true;
 	if ( m_flDisableTime != -1 )
 	{
@@ -64,6 +75,12 @@ bool CBasePlayerSpawnPoint::HasSpawned()
 void CBasePlayerSpawnPoint::DisableSpawn()
 {
 	m_flDisableTime = gpGlobals->time + 5.0f; // Disabled for 5 seconds, if we step inside the spawn blocker
+}
+
+void CBasePlayerSpawnPoint::TemporarilyEnableSpawn( const float &flTime )
+{
+	m_bTempEnable = true;
+	m_flDisableTime = gpGlobals->time + flTime; // Enable the spawn temporarily
 }
 
 void CBasePlayerSpawnPoint::KeyValue( KeyValueData *pkvd )
