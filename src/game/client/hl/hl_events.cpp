@@ -36,16 +36,8 @@ extern "C"
 	void EV_FireMP52(struct event_args_s *args);
 	void EV_FirePython(struct event_args_s *args);
 	void EV_PythonShells(struct event_args_s *args);
-	void EV_FireGauss(struct event_args_s *args);
-	void EV_SpinGauss(struct event_args_s *args);
-	void EV_FireCrossbow(struct event_args_s *args);
-	void EV_FireCrossbow2(struct event_args_s *args);
-	void EV_FireRpg(struct event_args_s *args);
-	void EV_EgonFire(struct event_args_s *args);
-	void EV_EgonStop(struct event_args_s *args);
-	void EV_HornetGunFire(struct event_args_s *args);
+	void EV_FireNailgun(struct event_args_s *args);
 	void EV_TripmineFire(struct event_args_s *args);
-	void EV_SnarkFire(struct event_args_s *args);
 	void EV_DecalReset(struct event_args_s *args);
 
 	void EV_TrainPitchAdjust(struct event_args_s *args);
@@ -84,17 +76,9 @@ void Game_HookEvents(void)
 	gEngfuncs.pfnHookEvent("events/mp52.sc", EV_FireMP52);
 	gEngfuncs.pfnHookEvent("events/python.sc", EV_FirePython);
 	gEngfuncs.pfnHookEvent("events/python_shells.sc", EV_PythonShells);
-	gEngfuncs.pfnHookEvent("events/gauss.sc", EV_FireGauss);
-	gEngfuncs.pfnHookEvent("events/gaussspin.sc", EV_SpinGauss);
+	gEngfuncs.pfnHookEvent("events/nailgun.sc", EV_FireNailgun);
 	gEngfuncs.pfnHookEvent("events/train.sc", EV_TrainPitchAdjust);
 	gEngfuncs.pfnHookEvent("events/vehicle.sc", EV_VehiclePitchAdjust);
-	gEngfuncs.pfnHookEvent("events/crossbow1.sc", EV_FireCrossbow);
-	gEngfuncs.pfnHookEvent("events/crossbow2.sc", EV_FireCrossbow2);
-	gEngfuncs.pfnHookEvent("events/rpg.sc", EV_FireRpg);
-	gEngfuncs.pfnHookEvent("events/egon_fire.sc", EV_EgonFire);
-	gEngfuncs.pfnHookEvent("events/egon_stop.sc", EV_EgonStop);
-	gEngfuncs.pfnHookEvent("events/firehornet.sc", EV_HornetGunFire);
 	gEngfuncs.pfnHookEvent("events/tripfire.sc", EV_TripmineFire);
-	gEngfuncs.pfnHookEvent("events/snarkfire.sc", EV_SnarkFire);
 	gEngfuncs.pfnHookEvent("events/decal_reset.sc", EV_DecalReset);
 }

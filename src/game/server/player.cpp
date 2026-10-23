@@ -8062,6 +8062,16 @@ void PrecachePlayerWeaponSpreadFile()
 	}
 }
 
+CON_COMMAND( sv_weaponspread_reset, "Reset the spread and reload weapon_spread.txt" )
+{
+	bool bIsCheatsEnabled = CVAR_GET_FLOAT( "sv_cheats" ) >= 1 ? true : false;
+	if ( !bIsCheatsEnabled ) return;
+	PrecachePlayerWeaponSpreadFile();
+	Msg( "Reloaded weapon_spread.txt\n" );
+}
+
+extern ConVar sv_weaponspread_debug;
+
 WeaponSpreadList GetWeaponSpreadList( const int &nType, bool &bIsValid )
 {
 	for ( size_t i = 0; i < m_WeaponSpreadList.size(); i++ )
@@ -8104,15 +8114,18 @@ bool CBasePlayer::GetWeaponSpread( const int &nType, WeaponSpreadData &data )
 	m_nCurrentBulletShot++;
 
 	// If we are moving, then add extra to the X and Y pos.
-	int playerspeed = pev->speed;
+	float playerspeed = pev->velocity.Length2D();
 	float nSpannerIncreaseBy = (playerspeed / 25);
 	int iExtraSpan = static_cast<int>( nSpannerIncreaseBy );
+
 	if ( iExtraSpan > 0 )
 	{
 		// We need to adjust it for the X,Y cords
-		float flAdjusted = (iExtraSpan / 20);
+		float flAdjusted = (nSpannerIncreaseBy / 280);
 		data.SpreadX += flAdjusted;
 		data.SpreadY += flAdjusted;
+		if ( sv_weaponspread_debug.GetInt() >= 2 )
+			Msg( "Movement Adjustments to Spread XY Cords: %f\n", flAdjusted );
 	}
 
 	return bIsValid;

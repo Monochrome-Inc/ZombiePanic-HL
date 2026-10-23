@@ -43,6 +43,8 @@ extern entvars_t *g_pevLastInflictor;
 #define HUMAN_GIB_COUNT  6
 #define ALIEN_GIB_COUNT  4
 
+ConVar sv_weaponspread_debug( "sv_weaponspread_debug", "0", FCVAR_CHEATS );
+
 // HACKHACK -- The gib velocity equations don't work
 void CGib ::LimitVelocity(void)
 {
@@ -1505,6 +1507,11 @@ Vector CBaseEntity::FireBulletsPlayer(ULONG cShots, Vector vecSrc, Vector vecDir
 	{
 		x = wpnSpreadData.SpreadX;
 		y = wpnSpreadData.SpreadY;
+		if ( sv_weaponspread_debug.GetBool() )
+		{
+			Msg( "SpreadData: [%i]\n", wpnSpreadData.Amount );
+			Msg( "X: [%f]\nY: [%f]\n", x, y );
+		}
 	}
 
 	for (ULONG iShot = 1; iShot <= cShots; iShot++)

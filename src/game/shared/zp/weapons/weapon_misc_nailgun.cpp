@@ -42,6 +42,8 @@ void CWeaponNailGun::Precache(void)
 	PRECACHE_SOUND("weapons/nailgun/proj_hit.wav");
 	PRECACHE_SOUND("weapons/nailgun/proj_hit2.wav");
 	PRECACHE_SOUND("weapons/nailgun/proj_hit3.wav");
+
+	m_nEventPrimary = PRECACHE_EVENT(1, "events/nailgun.sc");
 }
 
 int CWeaponNailGun::AddToPlayer( CBasePlayer *pPlayer )
@@ -108,6 +110,8 @@ void CWeaponNailGun::PrimaryAttack()
 	pBolt->pev->speed = flBoltVelocity;
 	pBolt->pev->avelocity.z = 10;
 #endif
+
+	PLAYBACK_EVENT_FULL(0, m_pPlayer->edict(), m_nEventPrimary, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, 0.0, 0.0, 0, 0, 0, 0);
 
 	if (!m_iClip && m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0)
 		// HEV suit - indicate out of ammo condition
