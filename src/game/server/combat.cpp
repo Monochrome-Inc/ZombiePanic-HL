@@ -1536,6 +1536,29 @@ Vector CBaseEntity::FireBulletsPlayer(ULONG cShots, Vector vecSrc, Vector vecDir
 		// do damage, paint decals
 		if (tr.flFraction != 1.0)
 		{
+			if ( sv_weaponspread_debug.GetBool() )
+			{
+				Vector vMin, vMax;
+				vMin = vMax = tr.vecEndPos;
+				vMin -= 3;
+				vMax += 3;
+
+				// Show debug hit location for the clients
+				MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
+					WRITE_BYTE( TE_BOX );
+					WRITE_COORD( vMin.x );
+					WRITE_COORD( vMin.y );
+					WRITE_COORD( vMin.z );
+					WRITE_COORD( vMax.x );
+					WRITE_COORD( vMax.y );
+					WRITE_COORD( vMax.z );
+					WRITE_SHORT( 35 ); // short life in 0.1 s
+					WRITE_BYTE( 255 ); // R
+					WRITE_BYTE( 20 ); // G
+					WRITE_BYTE( 20 ); // B
+				MESSAGE_END();
+			}
+
 			CBaseEntity *pEntity = CBaseEntity::Instance(tr.pHit);
 			float flDamage;
 			if ( iDamage )
