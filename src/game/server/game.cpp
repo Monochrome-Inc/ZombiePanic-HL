@@ -603,6 +603,7 @@ void GameDLLInit(void)
 	CVAR_REGISTER(&mp_dmg_swipe);
 	CVAR_REGISTER(&mp_dmg_fafo);
 	CVAR_REGISTER(&mp_dmg_sig);
+	CVAR_REGISTER(&mp_dmg_1911);
 	CVAR_REGISTER(&mp_dmg_ppk);
 	CVAR_REGISTER(&mp_dmg_cz75);
 	CVAR_REGISTER(&mp_dmg_glock);
