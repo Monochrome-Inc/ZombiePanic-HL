@@ -104,6 +104,21 @@ qboolean EV_IsLocal(int idx)
 
 /*
 =================
+EV_IsSpectatingPlayer
+
+Is the entity == the local player
+=================
+*/
+qboolean EV_IsSpectatingPlayer(int idx)
+{
+	// check if we are in some way in first person spec mode
+	if (IS_FIRSTPERSON_SPEC)
+		return (g_iUser2 == idx);
+	return false;
+}
+
+/*
+=================
 EV_GetGunPosition
 
 Figure out the height of the gun

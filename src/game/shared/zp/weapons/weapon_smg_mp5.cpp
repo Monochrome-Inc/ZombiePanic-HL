@@ -29,6 +29,8 @@ void CWeaponSMGMP5::Spawn()
 
 void CWeaponSMGMP5::Precache(void)
 {
+	BaseClass::BasePrecache();
+
 	PRECACHE_MODEL("models/v_mp5.mdl");
 	PRECACHE_MODEL("models/w_mp5.mdl");
 	PRECACHE_MODEL("models/p_mp5.mdl");

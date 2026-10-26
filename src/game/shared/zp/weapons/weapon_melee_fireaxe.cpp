@@ -11,6 +11,8 @@ PRECACHE_WEAPON_REGISTER( weapon_fireaxe );
 
 void CWeaponMeleeFireaxe::Precache( void )
 {
+	BaseClass::BasePrecache();
+
 	PRECACHE_MODEL("models/v_fireaxe.mdl");
 	PRECACHE_MODEL("models/w_fireaxe.mdl");
 	PRECACHE_MODEL("models/p_fireaxe.mdl");

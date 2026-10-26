@@ -44,6 +44,8 @@ int CWeaponExplosiveTNT::AddDuplicate( CBasePlayerItem *pOriginal )
 
 void CWeaponExplosiveTNT::Precache(void)
 {
+	BaseClass::BasePrecache();
+
 	PRECACHE_MODEL("models/w_tnt.mdl");
 	PRECACHE_MODEL("models/w_tnt_thrown.mdl");
 	PRECACHE_MODEL("models/v_tnt.mdl");

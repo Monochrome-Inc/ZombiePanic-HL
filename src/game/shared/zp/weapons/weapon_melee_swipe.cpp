@@ -17,6 +17,8 @@ void CWeaponMeleeSwipe::Spawn(void)
 
 void CWeaponMeleeSwipe::Precache(void)
 {
+	BaseClass::BasePrecache();
+
 	PRECACHE_MODEL("models/v_swipe.mdl");
 	PRECACHE_MODEL("models/w_swipe.mdl");
 	PRECACHE_MODEL("models/p_swipe.mdl");

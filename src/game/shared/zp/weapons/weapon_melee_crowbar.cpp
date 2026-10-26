@@ -11,6 +11,8 @@ PRECACHE_WEAPON_REGISTER( weapon_crowbar );
 
 void CWeaponMeleeCrowbar::Precache( void )
 {
+	BaseClass::BasePrecache();
+
 	PRECACHE_MODEL( "models/v_crowbar.mdl" );
 	PRECACHE_MODEL( "models/w_crowbar.mdl" );
 	PRECACHE_MODEL( "models/p_crowbar.mdl" );

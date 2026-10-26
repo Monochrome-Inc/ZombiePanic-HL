@@ -20,6 +20,8 @@ void CWeaponShotgunRemington::Spawn(void)
 
 void CWeaponShotgunRemington::Precache( void )
 {
+	BaseClass::BasePrecache();
+
 	PRECACHE_MODEL( "models/v_shotgun.mdl" );
 	PRECACHE_MODEL( "models/w_shotgun.mdl" );
 	PRECACHE_MODEL( "models/p_shotgun.mdl" );

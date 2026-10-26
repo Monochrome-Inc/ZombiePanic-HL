@@ -859,6 +859,15 @@ void CBasePlayerWeapon::SendWeaponAnim(int iAnim, int skiplocal, int body)
 	WRITE_BYTE(iAnim); // sequence number
 	WRITE_BYTE(pev->body); // weaponmodel bodygroup.
 	MESSAGE_END();
+
+#if defined( CLIENT_WEAPONS )
+	int flags = FEV_NOTHOST;
+#else
+	int flags = 0;
+#endif
+
+	// Send the EV_AnimationSync to spectators!
+	PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_nSpecSyncEvent, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, 0, 0, 0, 0, iAnim, pev->body );
 }
 
 BOOL CBasePlayerWeapon ::AddPrimaryAmmo(int iCount, char *szName, int iMaxClip, int iMaxCarry)

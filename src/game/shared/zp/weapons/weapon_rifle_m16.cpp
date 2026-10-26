@@ -32,6 +32,8 @@ void CWeaponRifleM16::Spawn()
 
 void CWeaponRifleM16::Precache(void)
 {
+	BaseClass::BasePrecache();
+
 	PRECACHE_MODEL("models/v_556AR.mdl");
 	PRECACHE_MODEL("models/w_556AR.mdl");
 	PRECACHE_MODEL("models/p_556AR.mdl");

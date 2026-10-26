@@ -11,6 +11,8 @@ PRECACHE_WEAPON_REGISTER( weapon_leadpipe );
 
 void CWeaponMeleeLeadPipe::Precache( void )
 {
+	BaseClass::BasePrecache();
+
 	PRECACHE_MODEL("models/v_leadpipe.mdl");
 	PRECACHE_MODEL("models/w_leadpipe.mdl");
 	PRECACHE_MODEL("models/p_leadpipe.mdl");

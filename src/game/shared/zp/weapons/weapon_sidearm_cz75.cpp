@@ -30,6 +30,8 @@ void CWeaponSideArmCZ75::Spawn()
 
 void CWeaponSideArmCZ75::Precache(void)
 {
+	BaseClass::BasePrecache();
+
 	PRECACHE_MODEL("models/v_cz75.mdl");
 	PRECACHE_MODEL("models/w_cz75.mdl");
 	PRECACHE_MODEL("models/p_cz75.mdl");

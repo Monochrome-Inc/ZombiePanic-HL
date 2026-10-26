@@ -11,6 +11,8 @@ PRECACHE_WEAPON_REGISTER( weapon_walkstick );
 
 void CWeaponMeleeWalkStick::Precache( void )
 {
+	BaseClass::BasePrecache();
+
 	PRECACHE_MODEL( "models/v_walkstick.mdl" );
 	PRECACHE_MODEL( "models/w_walkstick.mdl" );
 	PRECACHE_MODEL( "models/p_walkstick.mdl" );

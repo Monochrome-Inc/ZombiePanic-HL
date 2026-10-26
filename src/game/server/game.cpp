@@ -87,6 +87,7 @@ cvar_t mp_dmg_leadpipe_heavy = { "mp_dmg_leadpipe_heavy", "45", FCVAR_SERVER };
 cvar_t mp_dmg_swipe = { "mp_dmg_swipe", "30", FCVAR_SERVER };
 cvar_t mp_dmg_fafo = { "mp_dmg_fafo", "350", FCVAR_SERVER };
 cvar_t mp_dmg_sig = { "mp_dmg_sig", "12", FCVAR_SERVER };
+cvar_t mp_dmg_1911 = { "mp_dmg_1911", "15", FCVAR_SERVER };
 cvar_t mp_dmg_ppk = { "mp_dmg_ppk", "8", FCVAR_SERVER };
 cvar_t mp_dmg_cz75 = { "mp_dmg_cz75", "8", FCVAR_SERVER };
 cvar_t mp_dmg_glock = { "mp_dmg_glock", "18", FCVAR_SERVER };

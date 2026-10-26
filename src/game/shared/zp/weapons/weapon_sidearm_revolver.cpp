@@ -71,6 +71,8 @@ void CWeaponSideArmRevolver::Spawn()
 
 void CWeaponSideArmRevolver::Precache(void)
 {
+	BaseClass::BasePrecache();
+
 	PRECACHE_MODEL("models/v_357.mdl");
 	PRECACHE_MODEL("models/w_357.mdl");
 	PRECACHE_MODEL("models/p_357.mdl");

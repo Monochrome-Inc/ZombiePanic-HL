@@ -91,6 +91,7 @@ extern "C"
 	void EV_FirePython(struct event_args_s *args);
 	void EV_PythonShells(struct event_args_s *args);
 	void EV_FireNailgun(struct event_args_s *args);
+	void EV_AnimationSync(struct event_args_s *args);
 	void EV_FireRpg(struct event_args_s *args);
 	void EV_TripmineFire(struct event_args_s *args);
 	void EV_DecalReset(struct event_args_s *args);
@@ -410,7 +411,7 @@ void EV_HLDM_FireBullets(int idx, float *forward, float *right, float *up, int c
 {
 	WEAPON *pActive = CHudAmmo::Get()->GetActiveWeapon();
 	// Update our crosshair
-	if ( pActive )
+	if ( pActive && EV_IsLocal(idx) )
 	{
 		// If not active, return default settings.
 		WeaponData wpnDat = GetWeaponSlotInfo( pActive->szName );
@@ -1199,18 +1200,28 @@ void EV_PythonShells( event_args_t *args )
 //======================
 void EV_FireNailgun(event_args_t *args)
 {
+	int idx = args->entindex;
 	WEAPON *pActive = CHudAmmo::Get()->GetActiveWeapon();
 	// Update our crosshair
-	if (pActive)
+	if ( pActive && EV_IsLocal(idx) )
 	{
 		// If not active, return default settings.
-		WeaponData wpnDat = GetWeaponSlotInfo(pActive->szName);
-		CHudZPCrossHair::Get()->UpdateDynamicCrosshair(wpnDat.DynCrossHair.increase_spanner, wpnDat.DynCrossHair.increase_length, 0.15f);
+		WeaponData wpnDat = GetWeaponSlotInfo( pActive->szName );
+		CHudZPCrossHair::Get()->UpdateDynamicCrosshair( wpnDat.DynCrossHair.increase_spanner, wpnDat.DynCrossHair.increase_length, 0.15f );
 	}
 }
+
 //======================
-//	    EGON END
+//	    Animation Sync from the server end ( only for spectators )
 //======================
+void EV_AnimationSync(event_args_t *args)
+{
+	int idx = args->entindex;
+	if ( !EV_IsSpectatingPlayer(idx) ) return;
+	int anim = args->iparam1;
+	int body = args->iparam2;
+	gEngfuncs.pEventAPI->EV_WeaponAnimation( anim, body );
+}
 
 //======================
 //	   TRIPMINE START

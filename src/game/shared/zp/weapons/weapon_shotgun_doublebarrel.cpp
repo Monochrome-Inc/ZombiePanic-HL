@@ -16,6 +16,8 @@ void CWeaponShotgunDoubleBarrel::Spawn()
 
 void CWeaponShotgunDoubleBarrel::Precache(void)
 {
+	BaseClass::BasePrecache();
+
 	PRECACHE_MODEL("models/v_doublebarrel.mdl");
 	PRECACHE_MODEL("models/w_doublebarrel.mdl");
 	PRECACHE_MODEL("models/p_doublebarrel.mdl");

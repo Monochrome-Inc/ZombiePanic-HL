@@ -30,6 +30,8 @@ void CWeaponSideArmGlock17::Spawn()
 
 void CWeaponSideArmGlock17::Precache(void)
 {
+	BaseClass::BasePrecache();
+
 	PRECACHE_MODEL("models/v_glock17.mdl");
 	PRECACHE_MODEL("models/w_glock17.mdl");
 	PRECACHE_MODEL("models/p_glock17.mdl");

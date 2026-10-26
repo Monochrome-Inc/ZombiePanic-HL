@@ -37,6 +37,7 @@ extern "C"
 	void EV_FirePython(struct event_args_s *args);
 	void EV_PythonShells(struct event_args_s *args);
 	void EV_FireNailgun(struct event_args_s *args);
+	void EV_AnimationSync(struct event_args_s *args);
 	void EV_TripmineFire(struct event_args_s *args);
 	void EV_DecalReset(struct event_args_s *args);
 
@@ -77,6 +78,7 @@ void Game_HookEvents(void)
 	gEngfuncs.pfnHookEvent("events/python.sc", EV_FirePython);
 	gEngfuncs.pfnHookEvent("events/python_shells.sc", EV_PythonShells);
 	gEngfuncs.pfnHookEvent("events/nailgun.sc", EV_FireNailgun);
+	gEngfuncs.pfnHookEvent("events/spec_sync.sc", EV_AnimationSync);
 	gEngfuncs.pfnHookEvent("events/train.sc", EV_TrainPitchAdjust);
 	gEngfuncs.pfnHookEvent("events/vehicle.sc", EV_VehiclePitchAdjust);
 	gEngfuncs.pfnHookEvent("events/tripfire.sc", EV_TripmineFire);

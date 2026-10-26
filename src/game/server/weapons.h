@@ -244,6 +244,11 @@ public:
 	virtual int Save(CSave &save);
 	virtual int Restore(CRestore &restore);
 
+	inline void BasePrecache()
+	{
+		m_nSpecSyncEvent = PRECACHE_EVENT( 1, "events/spec_sync.sc" );
+	}
+
 	static TYPEDESCRIPTION m_SaveData[];
 
 	// generic weapon versions of CBasePlayerItem calls
@@ -348,6 +353,8 @@ public:
 	int m_fInReload; // Are we in the middle of a reload;
 
 	int m_iDefaultAmmo; // how much ammo you get when you pick up this weapon as placed by a level designer.
+
+	int m_nSpecSyncEvent; // Tells the spectator to update the animation!
 
 #ifdef SERVER_DLL
 	void ResetAssignedSlot() { m_iAssignedSlotPosition = -1; }

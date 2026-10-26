@@ -31,6 +31,8 @@ void CWeaponRifleSKS::Spawn()
 
 void CWeaponRifleSKS::Precache(void)
 {
+	BaseClass::BasePrecache();
+
 	PRECACHE_MODEL("models/v_sks.mdl");
 	PRECACHE_MODEL("models/w_sks.mdl");
 	PRECACHE_MODEL("models/p_sks.mdl");

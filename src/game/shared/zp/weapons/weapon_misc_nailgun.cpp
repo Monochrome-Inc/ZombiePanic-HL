@@ -24,6 +24,8 @@ void CWeaponNailGun::Spawn()
 
 void CWeaponNailGun::Precache(void)
 {
+	BaseClass::BasePrecache();
+
 	PRECACHE_MODEL("models/v_barricade.mdl");
 	PRECACHE_MODEL("models/w_barricade.mdl");
 	PRECACHE_MODEL("models/w_barricade_nailgun.mdl");

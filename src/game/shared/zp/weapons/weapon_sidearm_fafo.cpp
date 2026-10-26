@@ -26,6 +26,8 @@ void CWeaponSideArmFafo::Spawn()
 
 void CWeaponSideArmFafo::Precache(void)
 {
+	BaseClass::BasePrecache();
+
 	PRECACHE_MODEL("models/v_1911.mdl");
 	PRECACHE_MODEL("models/w_1911.mdl");
 	PRECACHE_MODEL("models/p_1911.mdl");

@@ -55,6 +55,7 @@ extern cvar_t mp_dmg_leadpipe_heavy;
 extern cvar_t mp_dmg_swipe;
 extern cvar_t mp_dmg_fafo;
 extern cvar_t mp_dmg_sig;
+extern cvar_t mp_dmg_1911;
 extern cvar_t mp_dmg_ppk;
 extern cvar_t mp_dmg_cz75;
 extern cvar_t mp_dmg_glock;

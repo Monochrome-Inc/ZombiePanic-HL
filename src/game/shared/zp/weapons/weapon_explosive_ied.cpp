@@ -38,6 +38,8 @@ void CWeaponExplosiveIED::Spawn()
 
 void CWeaponExplosiveIED::Precache(void)
 {
+	BaseClass::BasePrecache();
+
 	PRECACHE_MODEL("models/v_satchel.mdl");
 	PRECACHE_MODEL("models/w_satchel.mdl");
 	PRECACHE_MODEL("models/p_satchel.mdl");

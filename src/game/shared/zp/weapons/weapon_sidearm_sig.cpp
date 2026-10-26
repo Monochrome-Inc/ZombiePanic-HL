@@ -32,6 +32,8 @@ void CWeaponSideArmSig::Spawn()
 
 void CWeaponSideArmSig::Precache(void)
 {
+	BaseClass::BasePrecache();
+
 	PRECACHE_MODEL("models/v_sig.mdl");
 	PRECACHE_MODEL("models/w_sig.mdl");
 	PRECACHE_MODEL("models/p_sig.mdl");

@@ -37,6 +37,8 @@ int CWeaponExplosiveMolotov::AddDuplicate( CBasePlayerItem *pOriginal )
 
 void CWeaponExplosiveMolotov::Precache(void)
 {
+	BaseClass::BasePrecache();
+
 	PRECACHE_MODEL("sprites/flame1.spr");
 	PRECACHE_MODEL("sprites/flame2.spr");
 	PRECACHE_MODEL("models/w_molotov.mdl");

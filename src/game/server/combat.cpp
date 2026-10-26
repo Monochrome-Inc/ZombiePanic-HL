@@ -1580,6 +1580,7 @@ Vector CBaseEntity::FireBulletsPlayer(ULONG cShots, Vector vecSrc, Vector vecDir
 					default:
 					case BULLET_PLAYER_FAFO: flDamage = mp_dmg_fafo.value; iDmgType = DMG_BULLET | DMG_ALWAYSGIB; break;
 					case BULLET_PLAYER_SIG: flDamage = mp_dmg_sig.value; break;
+					case BULLET_PLAYER_1911: flDamage = mp_dmg_1911.value; break;
 					case BULLET_PLAYER_PPK: flDamage = mp_dmg_ppk.value; break;
 					case BULLET_PLAYER_CZ75: flDamage = mp_dmg_cz75.value; break;
 					case BULLET_PLAYER_GLOCK: flDamage = mp_dmg_glock.value; break;

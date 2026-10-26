@@ -30,6 +30,8 @@ void CWeaponSideArmPPK::Spawn()
 
 void CWeaponSideArmPPK::Precache(void)
 {
+	BaseClass::BasePrecache();
+
 	PRECACHE_MODEL("models/v_ppk.mdl");
 	PRECACHE_MODEL("models/w_ppk.mdl");
 	PRECACHE_MODEL("models/p_ppk.mdl");
